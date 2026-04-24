@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Routine Tracker
 
-## Getting Started
+> **「文武両道の最適化」をデータで支える。**
+> 学習（精神的研鑽）と筋トレ（身体的研鑽）のデータを統合し、個人の生活バランスを可視化・最適化するための意思決定支援トラッカー。
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Project Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+「Routine Tracker」は、単なる活動記録ツールではありません。
+現代のエンジニアにとって不可欠な「高い集中力（学習）」と「強靭な体力（筋トレ）」の相関関係に着目し、
+**「次の一手（今日何をすべきか）」をデータに基づいて導き出すための意思決定支援アプリ**です。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 💡 Why this project?
+私自身、プログラミング学習に没頭すると運動不足になり、逆に運動に集中すると学習時間が削られるというジレンマを抱えていました。自分自身の生活を客観的なデータでハックし、常に最高のパフォーマンスを発揮できる「エンジニアの心技体」を整えたいという想いから開発しました。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🛠 Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+| Technology | Rationale |
+|------------|-----------|
+| **Next.js 15 (App Router)** | 最新のApp Routerによる高速なレンダリングと、高い保守性の実現。 |
+| **React 19** | 最新のHooksを活用し、UIの宣言的な記述と直感的な状態管理を実現。 |
+| **TypeScript** | **本プロジェクトの核。** ドメインモデルの定義からUI実装まで、徹底した型安全性を担保。 |
+| **Tailwind CSS v4** | ユーティリティファーストにより、動的なスタイリングを高速かつ軽量に実装。 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 💎 Design Philosophy
 
-## Deploy on Vercel
+### 1. Type-Safe Domain Modeling
+開発の第一歩として `src/types/index.ts` におけるデータ構造の定義を徹底。Union Type による厳密な制約により、UI実装時の不整合を未然に防ぐ堅牢な基盤を構築しています。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. Deep Code Understanding（1行ずつの血肉化）
+AIアシスタントを「身代わり」ではなく「最強の教師」として活用。
+出力されたコードを1行も理解せずに放置せず、**全て自力で写経し、解説コメントを付与したブランチ（feat/handson-...）**を作成することで、スキルの定着を図っています。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 3. Differentiation Logic（差別化ロジック）
+- **バランス分析**: 学習と筋トレの比率をスコアリングし、リソース配分の偏りを可視化。
+- **インテリジェント・サジェッション**: 蓄積されたデータに基づき、「今日は有酸素運動を推奨」といった意思決定支援を自動化（予定）。
+
+---
+
+## 🧑‍💻 Author
+**[あなたの名前/ハンドルネーム]**
+「技術の深掘り」と「本質的な課題解決」を両立させるエンジニアを目指しています。
+本プロジェクトでは、モダンな開発スタックの習得に加え、Git運用やドキュメンテーションといった「チーム開発で信頼される基礎」の徹底にもこだわっています。
