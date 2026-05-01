@@ -1,0 +1,150 @@
+# Routine Tracker - Project Context
+
+## プロダクト概要
+- **名称**: Routine Tracker（学習 × 筋トレ 統合トラッカー）
+- **コンセプト**: 「文武両道の最適化」。精神的研鑽（学習）と身体的研鑽（筋トレ）の比率を可視化し、次の行動を導き出す意思決定支援ツール。
+- **現在のフェーズ**: MVP開発中
+
+---
+
+## 技術スタック
+| 技術 | バージョン | 選定理由 |
+|------|-----------|---------|
+| Next.js | 15 (App Router) | 高速な画面遷移と開発効率 |
+| TypeScript | 最新 | 型安全性・堅牢な設計 |
+| Tailwind CSS | v4 | 条件付きクラスで直感的なUI実装 |
+
+---
+
+## ディレクトリ構成
+```
+src/
+├── app/          # Next.js App Router
+├── types/
+│   └── index.ts  # Session型など、ドメインモデル定義
+└── components/   # UIコンポーネント
+```
+
+### 核となる型定義（src/types/index.ts）
+```typescript
+type SessionType = 'learning' | 'workout';
+
+interface Session {
+  id: string;
+  type: SessionType;
+  title: string;
+  duration: number; // 分
+  date: string;     // ISO 8601
+  notes?: string;
+}
+```
+
+---
+
+## 実装済み機能
+- [x] プロジェクト基盤（クリーンアップ済み）
+- [x] Session型定義（src/types/index.ts）
+- [x] 動的な一覧表示（.map()でカード形式）
+- [x] プロフェッショナルREADME
+
+## 開発中の機能
+- [ ] 新規記録フォーム（CRUDの"C"）
+  - useState でリアルタイム同期
+  - e.preventDefault() でReact側制御
+  - スプレッド構文で既存データを保持しつつ追加
+
+---
+
+## Gitブランチ運用
+| ブランチ | 役割 |
+|---------|------|
+| `main` | 安定版（初期環境 + Hello World + 一覧表示） |
+| `draft/*` | AIによるお手本コード |
+| `feat/handson-*` | 手打ち写経・自己研鑽 |
+
+### 現在のブランチ状況
+- `draft/session-form` → AIによるフォーム実装のお手本
+- `feat/handson-session-form` → 【現在地】手打ちで写経中
+
+---
+
+## 学習スタイル（必ず守ること）
+1. **AIのコードをそのまま使わない**: 必ず `draft/` ブランチで受け取り、`feat/handson-` で手打ち写経する
+2. **1行ずつ解剖**: 全行に解説コメントを入れるまで次に進まない
+3. **型から入る**: UIより先に型（Type）を定義する
+4. **Tech Lead視点**: 「別の書き方は？」「弱点は？」「スケーラビリティは？」を常に問う
+
+---
+
+## AIへの指示原則
+- 「答え」ではなく「思考プロセス」を教えること
+- コードは実務レベルの可読性・保守性・型安全性を維持
+- 「動いた」で満足させず、エッジケースまで掘り下げる
+- 理解できたか確認するため、逆質問やクイズを出すこと
+
+---
+
+## TILドキュメント運用
+- 保存先: `/home/ljdjgc/dev/my-til-log/logs/YYYY-MM-DD.md`
+- 日本語で作成 → `git commit -m "docs: add TIL YYYY-MM-DD"`
+- 英訳を末尾に追記 → `git commit -m "Added English translation to logs"`
+- 週次レビュー: `/home/ljdjgc/dev/my-til-log/logs/weekly/YYYY-WXX.md`
+
+---
+
+## キャリア情報
+- **年齢**: 25歳
+- **現職**: シャープマーケティングジャパン／フィールドサポートSE 3年目
+- **現年収**: 450万（ボーナス込み）
+- **実務経験の強み**:
+  - Python による業務改善・自動化（3000人規模）
+  - PowerShell・コマンドプロンプトによるキッティング自動化
+  - この「泥臭い課題解決力」をWeb開発に翻訳してアピール
+
+---
+
+## 目標
+- **最終目標**: Google US エンジニア
+- **直近目標**: 2026年9〜10月までにWeb系自社開発企業より内定獲得
+- **ターゲット**: 自社開発のみ70社に応募（SES・受託は除外）
+- **条件**: モダンな技術選定（React / Next.js / TypeScript 等）
+- **年収目標**: 450〜500万（現年収維持以上）
+
+---
+
+## 年間スケジュール（最短内定ルート）
+| 時期 | 内容 |
+|------|------|
+| 4月後半 | TypeScript習得 |
+| 5月前半 | React + TypeScript で Weather App 実装 |
+| 5月後半〜6月前半 | Next.js習得 & メインポートフォリオ作成 |
+| 6月後半 | ポートフォリオ完成・テスト追加・GitHub整備 |
+| 7月 | 応募開始（Tier 1：30社） |
+| 8月 | 追加応募（Tier 2-3：40社）・面接ラッシュ |
+| 9〜10月 | 内定獲得・入社準備 |
+
+---
+
+## 技術ロードマップ
+| カテゴリ | 技術 |
+|---------|------|
+| Frontend | React 18, TypeScript 5, Next.js (App Router), Tailwind CSS |
+| Backend (BaaS) | Firebase (Auth, Firestore, Storage) |
+| Quality | Vitest, ESLint, Prettier, GitHub Actions |
+
+---
+
+## 戦略方針（AIへの判断基準）
+- 「早期転職」より「良質な自社開発企業への入社」を優先（生涯年収LTV最大化）
+- ポートフォリオの評価基準は「動くもの」ではなく**「保守性が高く、テストされたコード」**
+- 70社応募の確率論前提。不採用はデータとして処理
+- AIのコードは1行残らず面接で説明できる理解力を必須とする
+- **スケジュールを常に意識した優先度判断をすること**
+  例：「テストは今必要か？」→ 6月後半まで不要、その時期に追加
+
+---
+
+## 規律
+- 23:00就寝・05:00起床
+- 日曜日は学習休み（パートナーとの時間を確保）
+- 英語ドキュメント運用（シリコンバレー志向）
