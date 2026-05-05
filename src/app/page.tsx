@@ -14,7 +14,6 @@ export default function Home() {
           Learning Records
         </h1>
 
-        {/*　新規記録追加フォーム */}
         <form className="mb-8 rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900">
           <div className="mb-4">
             <label htmlFor="type" className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300">
