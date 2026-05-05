@@ -15,11 +15,23 @@ export default function Home() {
     ]
   );
 
-  // フォーム送信ハンドラー
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // ページの自動リロードを防ぐ
+    e.preventDefault();
 
-    // ここに新しいセッションデータをリストに追加するロジックを実装します（次のタスク）
+    const newSession: Session = {
+      id: crypto.randomUUID(),
+      type: newType,
+      duration: newDuration,
+      date: newDate,
+      note: newNote,
+    };
+
+    setSessions([...sessions, newSession]);
+
+    setNewType('study');
+    setNewDuration(0);
+    setNewDate(new Date().toISOString().split('T')[0]);
+    setNewNote('');
   };
 
   return (
