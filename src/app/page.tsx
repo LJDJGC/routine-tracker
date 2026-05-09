@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Session } from "@/src/types";
 
 export default function Home() {
+  // 1. useStateフックの導入: 
+  // 各入力フィールド（Type, Duration, Date, Note）の状態と、
+  // セッション一覧の状態をReactで管理するために使用します。
   const [newType, setNewType] = useState<Session['type']>('study');
   const [newDuration, setNewDuration] = useState<number>(0);
   const [newDate, setNewDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -15,7 +18,11 @@ export default function Home() {
     ]
   );
 
+  // 3. onSubmitハンドラーとe.preventDefault():
+  // フォームが送信されたときに実行される関数です。
   const handleSubmit = (e: React.FormEvent) => {
+    // e.preventDefault() はブラウザのデフォルトの挙動（ページのリロード）を停止させます。
+    // これにより、Reactの状態を維持したままデータを追加できます。
     e.preventDefault();
 
     const newSession: Session = {
@@ -26,8 +33,13 @@ export default function Home() {
       note: newNote,
     };
 
+    // 4. スプレッド構文でのデータ追加ロジック:
+    // [...sessions, newSession] は、現在のsessions配列の中身を全て展開し、
+    // 最後に新しいnewSessionを追加した「新しい配列」を作成します。
+    // Reactは新しい配列を受け取ることで変更を検知し、画面を再描画します。
     setSessions([...sessions, newSession]);
 
+    // 送信後、入力フォームを初期値にリセットします。
     setNewType('study');
     setNewDuration(0);
     setNewDate(new Date().toISOString().split('T')[0]);
@@ -46,6 +58,9 @@ export default function Home() {
             <label htmlFor="type" className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Type
             </label>
+            {/* 2. onChangeハンドラー: 
+                ユーザーが入力を変えるたびに、(e) => setNewType(...) が実行され、
+                Reactの状態(newType)を最新の入力値で更新します。 */}
             <select
               id="type"
               name="type"
@@ -142,8 +157,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </main >
-    </div >
-
+      </main>
+    </div>
   );
-} 
+}
