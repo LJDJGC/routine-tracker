@@ -48,6 +48,14 @@ export default function Home() {
     setNewNote('');
   };
 
+  // 5. 削除ロジックの実装 (handleDelete):
+  // 特定のセッションをリストから除外する関数です。
+  const handleDelete = (id: string) => {
+    // filter 関数を使って、クリックされたIDと一致しないデータだけを残した
+    // 「新しい配列」を作成し、状態を更新します。
+    setSessions(sessions.filter((session) => session.id !== id));
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center bg-gray-50 p-8 dark:bg-zinc-950">
       <main className="w-full max-w-2xl">
@@ -144,11 +152,23 @@ export default function Home() {
                     {session.date}
                   </p>
                 </div>
-                <div className="text-right">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {session.duration}
-                  </span>
-                  <span className="ml-1 text-sm text-gray-500">min</span>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {session.duration}
+                    </span>
+                    <span className="ml-1 text-sm text-gray-500">min</span>
+                  </div>
+                  {/* 削除ボタンの追加 */}
+                  <button
+                    onClick={() => handleDelete(session.id)}
+                    className="rounded-lg bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+                    aria-label="Delete record"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
               {session.note && (
