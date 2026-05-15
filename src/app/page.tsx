@@ -4,9 +4,6 @@ import { useState } from "react";
 import { Session } from "@/src/types";
 
 export default function Home() {
-  // 1. useStateフックの導入:
-  //各入力フィールド(Type, Duration, Date, Note)の状態と、
-  //セッション一覧の状態をReactで管理するために使用します。
   const [newType, setNewType] = useState<Session['type']>('study');
   const [newDuration, setNewDuration] = useState<number>(0);
   const [newDate, setNewDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -20,11 +17,7 @@ export default function Home() {
     ]
   );
 
-  // 3. onSubmitハンドラーとe.preventDefault():
-  // フォームが送信されたときに実行される関数です。
   const handleSubmit = (e: React.FormEvent) => {
-    // e.preventDefault() はブラウザのデフォルトの挙動（ページのリロード）を停止させます。
-    //これにより、Reactの状態を維持したままデータを追加できます。
     e.preventDefault();
 
     const newSession: Session = {
@@ -35,19 +28,18 @@ export default function Home() {
       note: newNote,
     };
 
-    //4. スプレッド構文でのデータ追加ロジック：
-    //[..sessions, newSession]は、現在のsessions配列の中身をすべて展開し、
-    //最後に新しいnewSessionを追加した「新しい配列」を作成します。
-    //Reactは新しい配列を受け取ることで変更を検知し、画面を再描画します。
     setSessions([...sessions, newSession]);
 
-    //送信後、入力フォームを初期値にリセットします。
     setNewType('study');
     setNewDuration(0);
     setNewDate(new Date().toISOString().split('T')[0]);
     setNewNote('');
   };
 
+
+  const handleDelete = (id: string) => {
+    setSessions(sessions.filter((session) => session.id !== id));
+  };
   return (
     <div className="flex min-h-screen flex-col items-center bg-gray-50 p-8 dark:bg-zinc-950">
       <main className="w-full max-w-2xl">
