@@ -125,14 +125,11 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-            </div>
-              {
-              session.note && (
+              {session.note && (
                 <p className="mt-3 text-gray-600 dark:text-zinc-300">
                   {session.note}
                 </p>
-              )
-            }
+              )}
             </div>
           ))}
     </div>
