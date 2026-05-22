@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
 
 export default function Home() {
@@ -9,13 +9,31 @@ export default function Home() {
   const [newDate, setNewDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [newNote, setNewNote] = useState<string>('');
 
-  const [sessions, setSessions] = useState<Session[]>(
-    [
-      { id: "1", type: "study", duration: 60, date: "2024-04-23", note: "Next.js learning" },
-      { id: "2", type: "workout", duration: 45, date: "2024-04-22", note: "Upper body" },
-      { id: "3", type: "study", duration: 120, date: "2024-04-21", note: "Tailwind CSS deep dive" },
-    ]
-  );
+  const [sesions, setSessions] = useState<Session[]>([]);
+
+  useEffect(() => {
+    const savedSessions = localStorage.getItem('sessions');
+
+    if (savedSessions) {
+      setSessions(JSON.parse(savedSessions));
+    } else {
+      const initialData = [
+        { id: "1", type: "study", duration: "60", date: "2024-04-23", note: "Bext.js learning" },
+        { id: "2", type: "workout", duration: "45", date: "2024-04-22", note: "Upper body" },
+        { id: "3", type: "study", duration: "120", date: "2024-04-21", note: "Tailwind CSS deep dive" },
+      ];
+      setSessions(initialData);
+      localStorage.setItem('sessions', JSON.stringify(initialData));
+
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('sessions', JSON.stringify(sessions));
+  }, [sessions]);
+
+
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
