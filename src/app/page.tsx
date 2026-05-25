@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-{/*そもそもimportって何だ？インポートするとどうなるんだ？*/ }
 import { Session } from "@/src/types";
 
 export default function Home() {
@@ -11,39 +10,27 @@ export default function Home() {
   const [newNote, setNewNote] = useState<string>('');
 
   const [sesions, setSessions] = useState<Session[]>([]);
-  {/*session, setSessionという関数を作成、useStateとSessionという関数をこれkら使うのかな？*/ }
 
   useEffect(() => {
-    {/*useEffectが呼び出されたときの動きが以下の内容*/ }
     const savedSessions = localStorage.getItem('sessions');
-    {/* savedSessionという関数を定義し、sessionsからgetItemで取り出して、localStorageに保存する。*/ }
 
     if (savedSessions) {
-      {/*条件でもし、savedSessionsならば？なのかな？どういう意味だ？ */ }
       setSessions(JSON.parse(savedSessions));
-      {/*setSessionsでsavedSessionsからparseしてJSONに保存する？でも意味がわからない。*/ }
     } else {
-      {/*または*/ }
       const initialData = [
         { id: "1", type: "study", duration: "60", date: "2024-04-23", note: "Bext.js learning" },
         { id: "2", type: "workout", duration: "45", date: "2024-04-22", note: "Upper body" },
         { id: "3", type: "study", duration: "120", date: "2024-04-21", note: "Tailwind CSS deep dive" },
       ];
-      {/*initialDataという関数を作り、例としての記録を作成しておく。*/ }
       setSessions(initialData);
-      {/*setSessionにinitialDataを保存する。*/ }
       localStorage.setItem('sessions', JSON.stringify(initialData));
-      {/*localStorageにsessions, initialDataをstringifyしたJSONを保存する*/ }
 
     }
   }, []);
 
   useEffect(() => {
-    {/*useEffectを呼び出して*/ }
     localStorage.setItem('sessions', JSON.stringify(sessions));
-    {/*localstorage.setItemでsessions, とsessionsをstringigyしてJSONにしたものを保存する*/ }
   }, [sessions]);
-  {/*なぜsessionsが書かれているのか理解できていない。*/ }
 
 
 
