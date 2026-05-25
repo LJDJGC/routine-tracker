@@ -9,31 +9,30 @@ export default function Home() {
   const [newDate, setNewDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [newNote, setNewNote] = useState<string>('');
 
-  const [sesions, setSessions] = useState<Session[]>([]);
+  // localStorageからのデータ読み込み（初期値）
+  const [sessions, setSessions] = useState<Session[]>([]);
 
+  // マウント時（最初）に1回だけ実行: localStorageからデータを読み込む
   useEffect(() => {
     const savedSessions = localStorage.getItem('sessions');
-
     if (savedSessions) {
       setSessions(JSON.parse(savedSessions));
     } else {
+      // 初回のみ初期データをセット
       const initialData = [
-        { id: "1", type: "study", duration: "60", date: "2024-04-23", note: "Bext.js learning" },
-        { id: "2", type: "workout", duration: "45", date: "2024-04-22", note: "Upper body" },
-        { id: "3", type: "study", duration: "120", date: "2024-04-21", note: "Tailwind CSS deep dive" },
+        { id: "1", type: "study", duration: 60, date: "2024-04-23", note: "Next.js learning" },
+        { id: "2", type: "workout", duration: 45, date: "2024-04-22", note: "Upper body" },
+        { id: "3", type: "study", duration: 120, date: "2024-04-21", note: "Tailwind CSS deep dive" },
       ];
       setSessions(initialData);
       localStorage.setItem('sessions', JSON.stringify(initialData));
-
     }
   }, []);
 
+  // sessionsの状態が変化したら每次保存する
   useEffect(() => {
     localStorage.setItem('sessions', JSON.stringify(sessions));
   }, [sessions]);
-
-
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
