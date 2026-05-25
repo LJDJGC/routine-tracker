@@ -53,9 +53,23 @@ interface Session {
   - e.preventDefault() でReact側制御
   - スプレッド構文で既存データを保持しつつ追加
 
-## 今後実装予定の機能
-- [ ] YouTubeURL貼り付け → 動画を見ながら学習記録できる機能
+## 今後実装予定の機能（優先順位順）
+
+### STEP 1：Firebase + Googleログイン（最優先）
+- [ ] Firebase導入
 - [ ] Google OAuth 認証
+- [ ] データをlocalStorageからFirestoreへ移行
+
+### STEP 2：草の可視化
+- [ ] 日付ごとのセッションデータを集計
+- [ ] カレンダー形式でヒートマップ表示（GitHubの草のようなUI）
+
+### STEP 3：AI機能
+- [ ] Gemini APIを使ったルーティンアドバイス機能
+- [ ] セッションデータをAIに渡して改善提案を表示
+
+### STEP 4：YouTube連携
+- [ ] YouTubeURL貼り付け → 動画を見ながら学習記録できる機能
 - [ ] YouTube Data API 連携・視聴履歴同期
 
 ---
