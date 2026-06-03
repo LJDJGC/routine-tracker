@@ -140,10 +140,10 @@ export default function Home() {
         };
         setSessions([...sessions, newSession]);
       } catch (error) {
-        console.error("Error addig to Firestore:", error);
+        console.error("Error adding to Firestore:", error);
       }
     } else {
-      const bewSession: Session = {
+      const newSession: Session = {
         id: crypto.randomUUID(),
         type: newType,
         duration: newDuration,
@@ -154,7 +154,12 @@ export default function Home() {
       setSessions(updated);
       localStorage.setItem("sessions", JSON.stringify(updated));
     }
-  }, []);
+
+    setNewType("study");
+    setNewDuration(0);
+    setNewDate(new Date().toISOString().spilit("T")[0]);
+    setNewNote("");
+  };
 
   // sessionsの状態が変化したら每次保存する
   useEffect(() => {
