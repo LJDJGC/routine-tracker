@@ -19,4 +19,24 @@ import {
   where,
 } from "firebase/firestore";
 
-export default function Home() { }
+export default function Home() {
+  const [newType, setNewType] = useState<Session["type"]>("study");
+  const [newDuration, setNewDuration] = useState<number>(0);
+  const [newDate, setNewDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [newNote, setNewNote] = useState<string>("");
+
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async(currentUser
+      setUser(currentUser);
+    setLoading(true);
+
+
+    ))
+})
+}
