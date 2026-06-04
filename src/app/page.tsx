@@ -61,15 +61,46 @@ export default function Home() {
               for (const localSession of localSessions) {
             const docRef = doc(collection(db, "sessions"));
             await setDoc(docRef, {
-
-            })
+              UserId: updateCurrentUser.UID,
+              type: localSession.type,
+              duration: localSession.duration,
+              date: localSession.date,
+              note: localSession.note || "",
+            });
+            firestoreSessions.push({
+              id: docRef.id,
+              type: localSession.type,
+              duration: localSession.duration,
+              date: localSession.date,
+              note: localSession.note,
+            });
           }
-            ]
+          localStorage.removeItem("sessions");
         }
-
       }
-      }
+      setSessions(firestoreSessions);
+    } catch (error) {
+      console.error("Error syncing firestore:", error);
+    }
+  } else {
+    const localData = localStorage.getItem("sessions");
+    if(localData) {
+      setSessions(JSON.parse(localData));
+    } else {
+      const initialData = [
+        {
+          id: "1",
+          type: "study",
+          duration: 60,
+          date: "2024-04-23",
+          note: "Next.js learning",
+        },
+        {
 
-    ))
+        }
+      ]
+    }
+  }
+  ))
 })
 }
