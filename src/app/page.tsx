@@ -36,6 +36,39 @@ export default function Home() {
       setUser(currentUser);
     setLoading(true);
 
+    if (currentUser) {
+      try {
+        const q = query(
+          collection(db, "sessions"),
+          where("userId", "==", currentUser.uid)
+        );
+        const querySnapshot = await getDocs(q);
+        const firestoreSessions: Session[] = [];
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          firestoreSessions.push({
+            id: docSnap.id,
+            type: data.type,
+            duration: data.duration,
+            date: data.date,
+            note: data.note,
+          });
+        });
+
+        const localData = localStorage.getItem("sessions");
+        if (localData) {
+          const localSessions = JSON.parse(localData) as Session[
+              for (const localSession of localSessions) {
+            const docRef = doc(collection(db, "sessions"));
+            await setDoc(docRef, {
+
+            })
+          }
+            ]
+        }
+
+      }
+      }
 
     ))
 })
