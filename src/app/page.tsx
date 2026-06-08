@@ -137,62 +137,62 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => { //
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => { //handleSubmitというReactの非同期関数
+    e.preventDefault();//e.preventDefautは英語の意味だと妨害かな？
 
-    if (user) {
+    if (user) {//もしユーザーがあるなら、
       try {
-        const docRef = doc(collection(db, "sessions"));
+        const docRef = doc(collection(db, "sessions"));//sessions, dbを持ってきてdocするdocRefという変数
         const newSessionData = {
           userId: user.uid,
           type: newType,
           duration: newDuration,
           date: newDate,
           note: newNote,
-        };
-        await setDoc(docRef, newSessionData);
+        };//userIdを一致させて、新しい入力をする
+        await setDoc(docRef, newSessionData);//待たせて、docRef, newSessionDataに情報をセットする。
         const newSession: Session = {
           id: docRef.id,
           type: newType,
           duration: newDuration,
           date: newDate,
           note: newNote,
-        };
-        setSessions([...sessions, newSession]);
+        };//newSessionとしてSessionｎdocRefのIDを入力、その他の新しい情報も追加する。
+        setSessions([...sessions, newSession]);//上記の新しい情報をSessionにセットする。
       } catch (error) {
-        console.error("Error adding to Firestore:", error);
+        console.error("Error adding to Firestore:", error);//エラーメッセージ
       }
-    } else {
+    } else {//もしユーザー情報がないのなら
       const newSession: Session = {
         id: crypto.randomUUID(),
         type: newType,
         duration: newDuration,
         date: newDate,
         note: newNote,
-      };
-      const updated = [...sessions, newSession];
-      setSessions(updated);
-      localStorage.setItem("sessions", JSON.stringify(updated));
+      };//SessionにnewSessionという変数でランダムなUUIDで,新しいデータをSessioonに入れる
+      const updated = [...sessions, newSession];//sessionsとNewSessionをupdatedする。
+      setSessions(updated);//Sessionsにupdatedをセットする
+      localStorage.setItem("sessions", JSON.stringify(updated));//localStorageにsessions, updatedをJSON文字列に変換したものをセットする。
     }
 
     setNewType("study");
     setNewDuration(0);
     setNewDate(new Date().toISOString().split("T")[0]);
     setNewNote("");
-  };
+  };//新しい変数を追加するときの処理
 
-  const handleDelete = async (id: string) => {
-    if (user) {
+  const handleDelete = async (id: string) => {//文字列IDの非同期関数であるhandleDelete
+    if (user) {//もしユーザーがあるなら、
       try {
-        await deleteDoc(doc(db, "sessions", id));
-        setSessions(sessions.filter((session) => session.id !== id));
+        await deleteDoc(doc(db, "sessions", id));//待たせて、db, sessions, idをdocで持ってきてdleteDocに格納する
+        setSessions(sessions.filter((session) => session.id !== id));//sessin.idとidが一致しないものを抽出し、setSesionsにいれる
       } catch (error) {
-        console.error("Error deleting from Firestore:", error);
+        console.error("Error deleting from Firestore:", error);//エラーメッセージ
       }
-    } else {
-      const updated = sessions.filter((session) => session.id !== id);
-      setSessions(updated);
-      localStorage.setItem("sessions", JSON.stringify(updated));
+    } else {//もしユーザーがいないのなら
+      const updated = sessions.filter((session) => session.id !== id);//session.idとidが一致しないものを抽出し、updatedという変数に入れる
+      setSessions(updated);//setSessionにupdateを入れる
+      localStorage.setItem("sessions", JSON.stringify(updated));//sessions, updatedをJSON文字列に変換したものをlocalStorageにセットする。
     }
   };
 
