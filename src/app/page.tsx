@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react"; /* ReactからuseStateとuseEffectをインポートPythonでいうとライブラリみたいな感じかな？ */
+import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
 import { auth, db, googleProvider } from "@/src/lib/firebase";
 import {
@@ -17,78 +17,77 @@ import {
   getDocs,
   query,
   where,
-} from "firebase/firestore"; /* firebaseカラ同期するためのデータベースとグーグルのプロバイダーをインポート、またfirebaseのfirestoreカラいろんな動詞をインポートしている。 */
-
+} from "firebase/firestore";
 export default function Home() {
-  const [newType, setNewType] = useState<Session["type"]>("study"); /* newTypeという変数を遷延して、勉強というtypeを初期設定する*/
+  const [newType, setNewType] = useState<Session["type"]>("study");
   const [newDuration, setNewDuration] = useState<number>(0);
   const [newDate, setNewDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
-  const [newNote, setNewNote] = useState<string>(""); /*  newDate, newNoteの変数を定義し、Dateでは文字列にしてTという分け方をしている。splitをつかってるので。Noteのほうは初期値に空白を設定しています。*/
+  const [newNote, setNewNote] = useState<string>("");
 
-  const [sessions, setSessions] = useState<Session[]>([]); /* sessionsという変数を定義している。[]は空白で定義。 */
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); /* userという変数を定義、ログインしているUserがあればそれで、なければnullで表す。loadingはtrueでローディングさせる。*/
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser); /* 現在のログインしているユーザーを読み込んでる */
-      setLoading(true); /* ローディング中 */
+      setUser(currentUser);
+      setLoading(true);
 
-      if (currentUser) { /* もし、ログインしているのなら */
+      if (currentUser) {
         try {
           const q = query(
-            collection(db, "sessions"), /* データベースからsessionというものを持ってくる */
-            where("userId", "==", currentUser.uid) /* 現在のユーザーIDを探す */
+            collection(db, "sessions"),
+            where("userId", "==", currentUser.uid)
           );
-          const querySnapshot = await getDocs(q); /* 待たせている？qを持ってきている */
-          const firestoreSessions: Session[] = []; /* firestoreのセッションを空白で定義している */
-          querySnapshot.forEach((docSnap) => { /* それそれのデータを持ってくる */
-            const data = docSnap.data(); /*　データにdocSnapとあるがdocSnapとは何をするのか？  */
+          const querySnapshot = await getDocs(q);
+          const firestoreSessions: Session[] = [];
+          querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
             firestoreSessions.push({
               id: docSnap.id,
               type: data.type,
               duration: data.duration,
               date: data.date,
               note: data.note,
-            }); /* データを持ってきて、firestoreSessionsにプッシュする。 */
+            });
           });
 
-          const localData = localStorage.getItem("sessions"); /* localstorageにsessionsのデータを持ってくる。*/
+          const localData = localStorage.getItem("sessions");
           if (localData) {
-            const localSessions = JSON.parse(localData) as Session[]; /* もし、ローカルデータがあるのなら、JSON.parseでlocaldataをSession[]として変換する*/
-            if (localSessions.length > 0) { /* もしローカルセッションが０よりも多いのなら */
+            const localSessions = JSON.parse(localData) as Session[];
+            if (localSessions.length > 0) {
               for (const localSession of localSessions) {
-                const docRef = doc(collection(db, "sessions")); /* localSessionsのうちのlocalSessionを１つずつ取り出し、db, sessionsにdocする。docとは何かわからない */
-                await setDoc(docRef, { /* awaitで待たせて、setDocでdocRefのデータをなにかしているが、Docは何をしているのか？*/
+                const docRef = doc(collection(db, "sessions"));
+                await setDoc(docRef, {
                   userId: currentUser.uid,
                   type: localSession.type,
                   duration: localSession.duration,
                   date: localSession.date,
                   note: localSession.note || "",
-                }); /* ユーザーID、タイプ、時間、日付、ノートを取り出している？ */
+                });
                 firestoreSessions.push({
                   id: docRef.id,
                   type: localSession.type,
                   duration: localSession.duration,
                   date: localSession.date,
                   note: localSession.note,
-                }); /* firestoreSessionsにid, type, duration, date, noteをプッシュ*/
+                });
               }
-              localStorage.removeItem("sessions"); /* localStorageカラsessionsを取り除く*/
+              localStorage.removeItem("sessions");
             }
           }
           setSessions(firestoreSessions);
         } catch (error) {
           console.error("Error syncing firestore:", error);
-        } /* firestoreSessionsをセットしエラーを掴んで、エラー内容を吐き出す*/
-      } else { /* ログインしていないのなら*/
-        const localData = localStorage.getItem("sessions"); /*sessionsから取り出してlocalStorageに収める。 */
-        if (localData) { // localDataがあるのなら
-          setSessions(JSON.parse(localData)); //setSessionsでlocalDataをJSON形式で書かれた文字列をJSONオブジェクトに変換する。
-        } else { // localDataがないのなら、
-          const initialData = [ //initialDataの変数を定義、初期値みたいなもの
+        }
+      } else {
+        const localData = localStorage.getItem("sessions");
+        if (localData) {
+          setSessions(JSON.parse(localData));
+        } else {
+          const initialData = [
             {
               id: "1",
               type: "study",
@@ -110,89 +109,89 @@ export default function Home() {
               date: "2024-04-21",
               note: "Tailwind CSS deep dive",
             },
-          ]; //3つのデータを例にしておく。
-          setSessions(initialData); // initialDtaをsetSessionsに定義する。
-          localStorage.setItem("sessions", JSON.stringify(initialData)); //localStorageにsessions, initialDataをJSON文字列に変換したものをセットする。
+          ];
+          setSessions(initialData);
+          localStorage.setItem("sessions", JSON.stringify(initialData));
         }
       }
-      setLoading(false); //ローディングがfalseで止まる
+      setLoading(false);
     });
 
-    return () => unsubscribe(); //unsubscribeを返す。
+    return () => unsubscribe();
   }, []);
 
-  const handleSignIn = async () => { //handleSignInという関数を定義、asyncで非同期のことを書くのかな。
+  const handleSignIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider); // awaitで待たせ、authで同期。googleProviderでgoogleログインをする。
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      console.error("Sign in failed:", error); //エラーが出た場合のメッセージ
+      console.error("Sign in failed:", error);
     }
   };
 
-  const handleSignOut = async () => { //handleSignOutという非同期の関数を定義
+  const handleSignOut = async () => {
     try {
-      await signOut(auth); //awaitでまたせ、同期でサインアウトさせる。
+      await signOut(auth);
     } catch (error) {
-      console.error("Sign out failed:", error); //エラーメッセージ
+      console.error("Sign out failed:", error);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => { //handleSubmitというReactの非同期関数
-    e.preventDefault();//e.preventDefautは英語の意味だと妨害かな？
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (user) {//もしユーザーがあるなら、
+    if (user) {
       try {
-        const docRef = doc(collection(db, "sessions"));//sessions, dbを持ってきてdocするdocRefという変数
+        const docRef = doc(collection(db, "sessions"));
         const newSessionData = {
           userId: user.uid,
           type: newType,
           duration: newDuration,
           date: newDate,
           note: newNote,
-        };//userIdを一致させて、新しい入力をする
-        await setDoc(docRef, newSessionData);//待たせて、docRef, newSessionDataに情報をセットする。
+        };
+        await setDoc(docRef, newSessionData);
         const newSession: Session = {
           id: docRef.id,
           type: newType,
           duration: newDuration,
           date: newDate,
           note: newNote,
-        };//newSessionとしてSessionｎdocRefのIDを入力、その他の新しい情報も追加する。
-        setSessions([...sessions, newSession]);//上記の新しい情報をSessionにセットする。
+        };
+        setSessions([...sessions, newSession]);
       } catch (error) {
-        console.error("Error adding to Firestore:", error);//エラーメッセージ
+        console.error("Error adding to Firestore:", error);
       }
-    } else {//もしユーザー情報がないのなら
+    } else {
       const newSession: Session = {
         id: crypto.randomUUID(),
         type: newType,
         duration: newDuration,
         date: newDate,
         note: newNote,
-      };//SessionにnewSessionという変数でランダムなUUIDで,新しいデータをSessioonに入れる
-      const updated = [...sessions, newSession];//sessionsとNewSessionをupdatedする。
-      setSessions(updated);//Sessionsにupdatedをセットする
-      localStorage.setItem("sessions", JSON.stringify(updated));//localStorageにsessions, updatedをJSON文字列に変換したものをセットする。
+      };
+      const updated = [...sessions, newSession];
+      setSessions(updated);
+      localStorage.setItem("sessions", JSON.stringify(updated));
     }
 
     setNewType("study");
     setNewDuration(0);
     setNewDate(new Date().toISOString().split("T")[0]);
     setNewNote("");
-  };//新しい変数を追加するときの処理
+  };
 
-  const handleDelete = async (id: string) => {//文字列IDの非同期関数であるhandleDelete
-    if (user) {//もしユーザーがあるなら、
+  const handleDelete = async (id: string) => {
+    if (user) {
       try {
-        await deleteDoc(doc(db, "sessions", id));//待たせて、db, sessions, idをdocで持ってきてdleteDocに格納する
-        setSessions(sessions.filter((session) => session.id !== id));//sessin.idとidが一致しないものを抽出し、setSesionsにいれる
+        await deleteDoc(doc(db, "sessions", id));
+        setSessions(sessions.filter((session) => session.id !== id));
       } catch (error) {
-        console.error("Error deleting from Firestore:", error);//エラーメッセージ
+        console.error("Error deleting from Firestore:", error);
       }
-    } else {//もしユーザーがいないのなら
-      const updated = sessions.filter((session) => session.id !== id);//session.idとidが一致しないものを抽出し、updatedという変数に入れる
-      setSessions(updated);//setSessionにupdateを入れる
-      localStorage.setItem("sessions", JSON.stringify(updated));//sessions, updatedをJSON文字列に変換したものをlocalStorageにセットする。
+    } else {
+      const updated = sessions.filter((session) => session.id !== id);
+      setSessions(updated);
+      localStorage.setItem("sessions", JSON.stringify(updated));
     }
   };
 
