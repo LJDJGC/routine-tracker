@@ -1,9 +1,10 @@
 # Routine Tracker - Project Context
 
 ## プロダクト概要
-- **名称**: Routine Tracker（学習 × 筋トレ 統合トラッカー）
-- **コンセプト**: 「文武両道の最適化」。精神的研鑽（学習）と身体的研鑽（筋トレ）の比率を可視化し、次の行動を導き出す意思決定支援ツール。
-- **現在のフェーズ**: MVP開発中
+- **名称**: Routine Tracker（学習 × 筋トレ × 英語イマージョン 統合トラッカー）
+- **コンセプト**: 「文武両道 + 英語習得の最適化」。精神的研鑽（学習）・身体的研鑽（筋トレ）・英語イマージョン（YouTube視聴）の3軸を可視化し、次の行動を導き出す意思決定支援ツール。
+- **ターゲットユーザー**: Comprehensible Input・イマージョン学習でYouTube英語動画をひたすら見ている学習者
+- **現在のフェーズ**: Firebase + Google OAuth認証実装済み・Firestore移行中
 
 ---
 
@@ -13,6 +14,10 @@
 | Next.js | 15 (App Router) | 高速な画面遷移と開発効率 |
 | TypeScript | 最新 | 型安全性・堅牢な設計 |
 | Tailwind CSS | v4 | 条件付きクラスで直感的なUI実装 |
+| Firebase | 最新 | Auth・Firestore・無料枠が使いやすい |
+
+> **補足**: Next.jsとの相性ではSupabase（PostgreSQL）がトレンド。
+> Firebase完成後にSupabaseへの移行を検討中。面接では技術選定の理由として説明できる。
 
 ---
 
@@ -22,20 +27,21 @@ src/
 ├── app/          # Next.js App Router
 ├── types/
 │   └── index.ts  # Session型など、ドメインモデル定義
+├── lib/
+│   └── firebase.ts  # Firebase初期化・auth・db・googleProvider
 └── components/   # UIコンポーネント
 ```
 
 ### 核となる型定義（src/types/index.ts）
 ```typescript
-type SessionType = 'learning' | 'workout';
+type SessionType = 'study' | 'workout';
 
 interface Session {
   id: string;
   type: SessionType;
-  title: string;
   duration: number; // 分
   date: string;     // ISO 8601
-  notes?: string;
+  note?: string;
 }
 ```
 
@@ -46,44 +52,45 @@ interface Session {
 - [x] Session型定義（src/types/index.ts）
 - [x] 動的な一覧表示（.map()でカード形式）
 - [x] プロフェッショナルREADME
-
-## 開発中の機能
-- [ ] 新規記録フォーム（CRUDの"C"）
-  - useState でリアルタイム同期
-  - e.preventDefault() でReact側制御
-  - スプレッド構文で既存データを保持しつつ追加
+- [x] 新規記録フォーム（CRUDの"C"）
+- [x] 削除機能（CRUDの"D"）
+- [x] localStorage永続化
+- [x] Firebase導入・Google OAuth認証
+- [x] Vercelデプロイ
 
 ## 今後実装予定の機能（優先順位順）
 
-### STEP 1：Firebase + Googleログイン（最優先）
-- [ ] Firebase導入
-- [ ] Google OAuth 認証
-- [ ] データをlocalStorageからFirestoreへ移行
+### STEP 1：Firestoreへのデータ移行（完了）
+- [x] Firebase導入
+- [x] Google OAuth 認証
+- [x] データをlocalStorageからFirestoreへ移行
 
 ### STEP 2：草の可視化
 - [ ] 日付ごとのセッションデータを集計
 - [ ] カレンダー形式でヒートマップ表示（GitHubの草のようなUI）
 
-### STEP 3：AI機能
-- [ ] Gemini APIを使ったルーティンアドバイス機能
-- [ ] セッションデータをAIに渡して改善提案を表示
+### STEP 3：YouTube Data API連携（イマージョン学習の可視化）
+- [ ] Google OAuthでYouTubeアカウントと連携
+- [ ] YouTube Data API v3で視聴履歴を取得
+- [ ] 視聴時間・チャンネル・動画をFirestoreに保存
+- [ ] 英語学習の視聴時間をグラフ・草で可視化
+- [ ] 「今日何時間英語を聴いたか」をダッシュボードに表示
 
-### STEP 4：YouTube連携
-- [ ] YouTubeURL貼り付け → 動画を見ながら学習記録できる機能
-- [ ] YouTube Data API 連携・視聴履歴同期
+### STEP 4：AI機能
+- [ ] Gemini APIを使ったルーティンアドバイス機能
+- [ ] 学習・筋トレ・YouTube視聴データをAIに渡して改善提案を表示
+- [ ] 「今週は英語視聴が少ないです。明日30分追加しましょう」など
 
 ---
 
 ## Gitブランチ運用
 | ブランチ | 役割 |
 |---------|------|
-| `main` | 安定版（初期環境 + Hello World + 一覧表示） |
+| `main` | 安定版 |
 | `draft/*` | AIによるお手本コード |
 | `feat/handson-*` | 手打ち写経・自己研鑽 |
-
-### 現在のブランチ状況
-- `draft/session-form` → AIによるフォーム実装のお手本
-- `feat/handson-session-form` → 【現在地】手打ちで写経中
+| `feat/recall-*` | コメントなしで復習・定着確認用 |
+| `wip:` | 作業途中のコミットメッセージ prefix |
 
 ---
 
@@ -95,6 +102,7 @@ interface Session {
 - STEP 3: 理解できたら説明を見ながら写経する（feat/handson-ブランチ）
 - STEP 4: 全行に自分の言葉でコメントを書く
 - STEP 5: AIにコメントを見せて理解の正誤確認をしてもらう
+- STEP 6: （復習）コメントを消して feat/recall- ブランチで再度書けるか確認
 
 1. **AIのコードをそのまま使わない**
    AIが生成したコードは必ず `draft/` ブランチで受け取る。
@@ -150,6 +158,7 @@ interface Session {
 - **実務経験の強み**:
   - Python による業務改善・自動化（3000人規模）
   - PowerShell・コマンドプロンプトによるキッティング自動化
+  - OEM Windowsキッティングマスターイメージ作成
   - この「泥臭い課題解決力」をWeb開発に翻訳してアピール
 
 ---
@@ -160,6 +169,7 @@ interface Session {
 - **ターゲット**: 自社開発のみ70社に応募（SES・受託は除外）
 - **条件**: モダンな技術選定（React / Next.js / TypeScript 等）
 - **年収目標**: [想定年収帯]（現年収維持以上）
+- **カジュアル面談開始**: [転職活動開始時期]
 
 ---
 
@@ -167,10 +177,10 @@ interface Session {
 | 時期 | 内容 |
 |------|------|
 | 4月後半 | TypeScript習得 |
-| 5月前半 | React + TypeScript で Weather App 実装 |
-| 5月後半〜6月前半 | Next.js習得 & メインポートフォリオ作成 |
-| 6月後半 | ポートフォリオ完成・テスト追加・GitHub整備 |
-| 7月 | 応募開始（Tier 1：30社） |
+| 5月 | CRUD実装・Firebase・Google OAuth・Firestore移行 |
+| 6月前半 | 草の可視化・YouTube Data API連携 |
+| 6月後半 | AI機能・ポートフォリオ完成・GitHub整備 |
+| 7月 | カジュアル面談開始・応募開始（Tier 1：30社） |
 | 8月 | 追加応募（Tier 2-3：40社）・面接ラッシュ |
 | [内定時期] | 内定獲得・入社準備 |
 
@@ -180,7 +190,8 @@ interface Session {
 | カテゴリ | 技術 |
 |---------|------|
 | Frontend | React 18, TypeScript 5, Next.js (App Router), Tailwind CSS |
-| Backend (BaaS) | Firebase (Auth, Firestore, Storage) |
+| Backend (BaaS) | Firebase (Auth, Firestore) → Supabase移行検討中 |
+| 外部API | YouTube Data API v3, Gemini API |
 | Quality | Vitest, ESLint, Prettier, GitHub Actions |
 
 ---
