@@ -11,9 +11,25 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+// Vercelのビルド時（SSGプリレンダリング）や環境変数がない場合に
+// Firebase初期化エラーが起きないようにガードする
+// Vercelのビルド時（SSGプリレンダリング）や環境変数がない場合に
+// Firebase初期化エラーが起きないようにガードする
+const isFirebaseAvailable =
+  typeof window !== "undefined" &&
+  firebaseConfig.apiKey &&
+  firebaseConfig.apiKey !== "test-api-key";
 
-export { app, auth, db, googleProvider };
+let app: ReturnType<typeof initializeApp> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
+
+if (isFirebaseAvailable) {
+  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  googleProvider = new GoogleAuthProvider();
+}
+
+export { app, auth, db, googleProvider, isFirebaseAvailable };

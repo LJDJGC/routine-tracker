@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
-import { auth, db, googleProvider } from "@/src/lib/firebase";
+import { auth, db, googleProvider, isFirebaseAvailable } from "@/src/lib/firebase";
 import {
   signInWithPopup,
   signOut,
@@ -31,6 +31,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Firebaseが利用できない場合（Vercelビルド時など）はlocalStorageのみ使用
+    if (!auth || !db) {
+      setLoading(false);
+      return;
+    }
+
+    const firestore = db;
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setLoading(true);
@@ -38,7 +45,7 @@ export default function Home() {
       if (currentUser) {
         try {
           const q = query(
-            collection(db, "sessions"),
+            collection(firestore, "sessions"),
             where("userId", "==", currentUser.uid)
           );
           const querySnapshot = await getDocs(q);
@@ -59,7 +66,7 @@ export default function Home() {
             const localSessions = JSON.parse(localData) as Session[];
             if (localSessions.length > 0) {
               for (const localSession of localSessions) {
-                const docRef = doc(collection(db, "sessions"));
+                const docRef = doc(collection(firestore, "sessions"));
                 await setDoc(docRef, {
                   userId: currentUser.uid,
                   type: localSession.type,
@@ -121,6 +128,7 @@ export default function Home() {
   }, []);
 
   const handleSignIn = async () => {
+    if (!auth || !googleProvider) return;
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
@@ -129,6 +137,7 @@ export default function Home() {
   };
 
   const handleSignOut = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
     } catch (error) {
@@ -139,7 +148,7 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (user) {
+    if (user && db) {
       try {
         const docRef = doc(collection(db, "sessions"));
         const newSessionData = {
@@ -181,7 +190,7 @@ export default function Home() {
   };
 
   const handleDelete = async (id: string) => {
-    if (user) {
+    if (user && db) {
       try {
         await deleteDoc(doc(db, "sessions", id));
         setSessions(sessions.filter((session) => session.id !== id));
