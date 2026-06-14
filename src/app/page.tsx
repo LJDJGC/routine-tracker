@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
 import { auth, db, googleProvider, isFirebaseAvailable } from "@/src/lib/firebase";
+import GrassCalendar from "@/src/components/GrassCalendar";
 import {
   signInWithPopup,
   signOut,
@@ -317,6 +318,11 @@ export default function Home() {
             Add Record
           </button>
         </form>
+
+        {/* 草の可視化 */}
+        <div className="mb-8">
+          <GrassCalendar sessions={sessions} />
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-8">
