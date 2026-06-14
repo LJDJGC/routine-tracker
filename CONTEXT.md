@@ -60,14 +60,14 @@ interface Session {
 
 ## 今後実装予定の機能（優先順位順）
 
-### STEP 1：Firestoreへのデータ移行（完了）
-- [x] Firebase導入
-- [x] Google OAuth 認証
-- [x] データをlocalStorageからFirestoreへ移行
+### STEP 1：Firestoreへのデータ移行（進行中）
+- [ ] localStorageからFirestoreへ完全移行
+- [ ] ユーザーごとにデータを分離して保存
 
 ### STEP 2：草の可視化
 - [ ] 日付ごとのセッションデータを集計
 - [ ] カレンダー形式でヒートマップ表示（GitHubの草のようなUI）
+- [ ] 学習・筋トレ・YouTube視聴の3軸を色分けして表示
 
 ### STEP 3：YouTube Data API連携（イマージョン学習の可視化）
 - [ ] Google OAuthでYouTubeアカウントと連携
