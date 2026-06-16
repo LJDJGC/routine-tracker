@@ -42,4 +42,94 @@ function getLevel(minutes: number, maxMinutes: number): number {
     const ratio = minutes / maxMinutes;
     if (ratio <= 0.1) return 0;
     if (ratio <= 0.25) return 1;
+    if (ratio <= 0.5) return 2;
+    if (ratio <= 0.75) return 3;
+    return 4;
 }
+
+function aggregateByData(sessions: Session[]): Map<string, DayData> {
+    const map = new Map<string, DayData>();
+
+    for (const s of sessions) {
+        if (!map.has(s.date)) {
+            map.set(s.date, {
+                date: s.date,
+                total: 0,
+                byType: {},
+                dominantType: "",
+            });
+        }
+        const day = map.get(s.date)!;
+        day.total += s.duration;
+        day.byType[s.type] = (day.byType[s.type] || 0) + s.duration;
+    }
+
+    for (const day of map.values()) {
+        let maxType = "";
+        let maxVal = 0;
+        for (const [type, val] of Object.entries(day.byType)) {
+            if (val > maxVal) {
+                maxVal = val;
+                maxType = type;
+            }
+        }
+        day.dominantType = maxType;
+    }
+
+    return map;
+}
+
+function formatMonthLabel(date: Date): string {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+}
+
+const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"];
+
+type Props = {
+    sessions: Session[];
+    weeks?: number;
+};
+
+export default function GrassCalender({ sessions, weeks = 12 }: Props) {
+    const { dayMap, maxDayMinutes } = useMemo(() => {
+        const map = aggregateByDate(sessions);
+        let max = 0;
+        for (const day of map.values()) {
+            if (day.total > max) max = day.total;
+        }
+        return { dayMap: map, maxDayMinutes: max };
+    }, [sessions]);
+
+    const days = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const result: Date[] = [];
+        const totalDays = weeks * 7;
+        for (let i = totalDays - 1; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            result.push(d);
+        }
+        return result;
+    }, [weeks]);
+
+    const weeksList = useMemo(() => {
+        const list: Date[][] = [];
+        for (let i = 0; i < days.length; i += 7) {
+            list.push(days.slice(i, i + 7));
+        }
+        return list;
+    }, [days]);
+
+    const mothLabels = useMemo(() => {
+        const labels: { index: number; label: string }[] = [];
+        let lastMonthh = -1;
+        weeksList.forEach((week, idx) => {
+            const month = week[6] ? week[6].getMonth() : week[0].getMonth();
+            if (month !== lastMonth) {
+                labels.push({ index: idx, label: formatMonthLabel(week[0]) });
+                lastMonth = month;
+            }
+        });
+        return labels;
+    }, [weeksList]);
