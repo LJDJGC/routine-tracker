@@ -21,6 +21,7 @@ const TYPE_COLORS: Record<string, string[]> = {
     ],
 };
 
+
 const DEFAULT_COLORS = [
     "bg-gray-50 dark:bg-zinc-800",
     "bg-gray-200 dark:bg-zinc-700",
@@ -29,12 +30,14 @@ const DEFAULT_COLORS = [
     "bg-gray-800 dark:bg-zinc-400",
 ];
 
+
 type DayData = {
     data: string;
     total: number;
     byType: Record<string, number>;
     dominantType: string;
 };
+
 
 function getLevel(minutes: number, maxMinutes: number): number {
     if (minutes === 0) return 0;
@@ -46,6 +49,7 @@ function getLevel(minutes: number, maxMinutes: number): number {
     if (ratio <= 0.75) return 3;
     return 4;
 }
+
 
 function aggregateByData(sessions: Session[]): Map<string, DayData> {
     const map = new Map<string, DayData>();
@@ -64,6 +68,7 @@ function aggregateByData(sessions: Session[]): Map<string, DayData> {
         day.byType[s.type] = (day.byType[s.type] || 0) + s.duration;
     }
 
+
     for (const day of map.values()) {
         let maxType = "";
         let maxVal = 0;
@@ -79,9 +84,11 @@ function aggregateByData(sessions: Session[]): Map<string, DayData> {
     return map;
 }
 
+
 function formatMonthLabel(date: Date): string {
     return `${date.getFullYear()}年${date.getMonth() + 1}月`;
 }
+
 
 const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"];
 
@@ -91,6 +98,7 @@ type Props = {
 };
 
 export default function GrassCalender({ sessions, weeks = 12 }: Props) {
+
     const { dayMap, maxDayMinutes } = useMemo(() => {
         const map = aggregateByDate(sessions);
         let max = 0;
@@ -133,3 +141,10 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         });
         return labels;
     }, [weeksList]);
+
+    function dataKey(d: Date): string {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+    }
+
+    return
+}    
