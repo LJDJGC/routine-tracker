@@ -143,8 +143,16 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
     }, [weeksList]);
 
     function dataKey(d: Date): string {
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
 
-    return
+    return (
+        <div className="rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900">
+            <h2 className="mb-4 text-lg font-bold text-gray-800 dark:text-zinc-100">
+                アクティビティ
+            </h2>
+
+            {/*　凡例 */}
+        </div>
+    )
 }    
