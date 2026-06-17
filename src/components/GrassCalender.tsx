@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { Session } from "@/src/types";
+import { spawn } from "child_process";
 
 
 const TYPE_COLORS: Record<string, string[]> = {
@@ -108,6 +109,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         return { dayMap: map, maxDayMinutes: max };
     }, [sessions]);
 
+
     const days = useMemo(() => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -121,6 +123,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         return result;
     }, [weeks]);
 
+
     const weeksList = useMemo(() => {
         const list: Date[][] = [];
         for (let i = 0; i < days.length; i += 7) {
@@ -128,6 +131,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         }
         return list;
     }, [days]);
+
 
     const mothLabels = useMemo(() => {
         const labels: { index: number; label: string }[] = [];
@@ -153,6 +157,16 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
             </h2>
 
             {/*　凡例 */}
+            <div className="mb-3 flex item-center gap-4 text-xs text-gray-500 dark:text-zinc-400">
+                <span>少</span>
+                {[0, 1, 2, 3, 4].map((level) => (
+                    <span
+                        key={level}
+                        className={`inline-block h-3 w-3rounded-sm ${DEFAULT_COLORS[level]}`}
+                    />
+                ))}
+                <span>多</span>
+            </div>
         </div>
     )
 }    
