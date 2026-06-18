@@ -197,14 +197,18 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                                 const total = dayData?.total || 0;
                                 const dominantType = dayData?.dominantType || "";
                                 const colors = TYPE_COLORS[dominantType] || DEFAULT_COLORS;
-                                const level = getLevel(total;, maxDayMinutes);
+                                const level = getLevel(total, maxDayMinutes);
 
-                            const isToday =
-                            d.toDateString() === new Date().toDateString();
+                                const isToday =
+                                    d.toDateString() === new Date().toDateString();
 
-                            return (
-                            <div></div>
-                            )
+                                return (
+                                    <div
+                                        key={dk}
+                                        title={`${dk}: ${total > 0 ? `${total}分` : "記載なし"}`}
+                                        className={`h-3 w-3 rounded-sm ${colors[level]} ${isToday ? "ring-2 ring-blue-400 ring-offset--1 dark:ring-offset-zinc-900" : ""}`}
+                                    />
+                                )
                             })}
                         </div>
                     ))}
