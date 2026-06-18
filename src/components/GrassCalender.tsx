@@ -166,6 +166,49 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                     />
                 ))}
                 <span>多</span>
+                <span className="m;-2">|</span>
+                <span className="inLine-block h-3 w-3 rounded-sm bg-nblue-400">
+                    Study
+                </span>
+                <span className="flex item-center gap-1">
+                    <span className="inLine-block h-3 w-3 rounded-sm bg-green-400" />
+                    Workout
+                </span>
+            </div>
+
+            {/* カレンダーグリッド */}
+            <div className="flex gap-1">
+                {/* 月ラベル */}
+                <div className="flex flex-col justify-start gap-0 pt-5 text-xs text-gray-400 dark:text-zinc-500">
+                    {monthLabels.map((m) => (
+                        <span key={m.index} style={{ marginTop: m.index === 0 ? 0 : 14 }}>
+                            {m.label}
+                        </span>
+                    ))}
+                </div>
+
+                {/* 週のグリッド */}
+                <div className="flex gap-1">
+                    {weeksList.map((week, w1) => (
+                        <div key={wi} className="flex flex-col gap-1">
+                            {week.map((d) => {
+                                const dk = dateKey(d);
+                                const dayData = dayMap.get(dk);
+                                const total = dayData?.total || 0;
+                                const dominantType = dayData?.dominantType || "";
+                                const colors = TYPE_COLORS[dominantType] || DEFAULT_COLORS;
+                                const level = getLevel(total;, maxDayMinutes);
+
+                            const isToday =
+                            d.toDateString() === new Date().toDateString();
+
+                            return (
+                            <div></div>
+                            )
+                            })}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )
