@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
 import { auth, db, googleProvider, isFirebaseAvailable } from "@/src/lib/firebase";
+import YoutubeSearch from "@/src/components/YoutubeSearch";
+import YoutubePlayer from "@/src/components/YoutubePlayer";
+import type { YouTubeVideoResult } from "@/src/app/api/youtube/search/route";
 import {
   signInWithPopup,
   signOut,
@@ -29,6 +32,9 @@ export default function Home() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // YouTube検索とプレイヤーの状態
+  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideoResult | null>(null);
 
   useEffect(() => {
     // Firebaseが利用できない場合（Vercelビルド時など）はlocalStorageのみ使用
@@ -94,7 +100,7 @@ export default function Home() {
         if (localData) {
           setSessions(JSON.parse(localData));
         } else {
-          const initialData = [
+          const initialData: Session[] = [
             {
               id: "1",
               type: "study",
@@ -126,6 +132,11 @@ export default function Home() {
 
     return () => unsubscribe();
   }, []);
+
+  // YouTube検索で動画が選択されたときのハンドラ
+  const handleSelectVideo = (video: YouTubeVideoResult) => {
+    setSelectedVideo(video);
+  };
 
   const handleSignIn = async () => {
     if (!auth || !googleProvider) return;
@@ -317,6 +328,32 @@ export default function Home() {
             Add Record
           </button>
         </form>
+
+        {/* YouTube学習ログセクション */}
+        <div className="mb-8 rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900">
+          <h2 className="mb-4 text-lg font-bold text-gray-800 dark:text-zinc-100">
+            YouTube 学習ログ
+          </h2>
+
+          {/* 動画検索 */}
+          <YoutubeSearch onSelect={handleSelectVideo} />
+
+          {/* 選択された動画のプレイヤー */}
+          {selectedVideo && (
+            <div className="mt-4 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
+                再生中: {selectedVideo.title}
+              </h3>
+              <YoutubePlayer
+                videoId={selectedVideo.videoId}
+                onStateChange={(state, durationSeconds) => {
+                  // フェーズ2でここにFirestore保存処理を追加する
+                  console.log("Player state:", state, "at", durationSeconds, "s");
+                }}
+              />
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-8">
