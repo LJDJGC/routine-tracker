@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
 import { auth, db, googleProvider, isFirebaseAvailable } from "@/src/lib/firebase";
+import GrassCalendar from "@/src/components/GrassCalendar";
 import {
   signInWithPopup,
   signOut,
