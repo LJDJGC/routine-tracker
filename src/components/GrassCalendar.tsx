@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import type { Session } from "@/src/types";
-import { spawn } from "child_process";
 
 
 const TYPE_COLORS: Record<string, string[]> = {
@@ -14,11 +13,11 @@ const TYPE_COLORS: Record<string, string[]> = {
         "bg-blue-800 dark:bg-blue-300",
     ],
     workout: [
-        "bg-gren-50 dark:bg-green-950",
-        "bg-gren-200 dark:bg-green-800",
-        "bg-gren-400 dark:bg-green-600",
-        "bg-gren-600 dark:bg-green-400",
-        "bg-gren-800 dark:bg-green-300",
+        "bg-green-50 dark:bg-green-950",
+        "bg-green-200 dark:bg-green-800",
+        "bg-green-400 dark:bg-green-600",
+        "bg-green-600 dark:bg-green-400",
+        "bg-green-800 dark:bg-green-300",
     ],
 };
 
@@ -33,7 +32,7 @@ const DEFAULT_COLORS = [
 
 
 type DayData = {
-    data: string;
+    date: string;
     total: number;
     byType: Record<string, number>;
     dominantType: string;
@@ -146,7 +145,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         return labels;
     }, [weeksList]);
 
-    function dataKey(d: Date): string {
+    function dateKey(d: Date): string {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
 

@@ -1,9 +1,9 @@
-"use client";
+"use client"; //reactで操作できるようにする。説明をカンニングしてしまったらブラウザで動くよという意味らしい
 
 import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
 import { auth, db, googleProvider, isFirebaseAvailable } from "@/src/lib/firebase";
-import GrassCalendar from "@/src/components/GrassCalendar";
+import GrassCalendar from "@/src/components/GrassCalendar"; //GrassCalendarファイルからインポートしている
 import {
   signInWithPopup,
   signOut,
