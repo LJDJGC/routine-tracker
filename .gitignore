@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# personal context (private - local only)
+CONTEXT.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
