@@ -52,7 +52,7 @@ function getLevel(minutes: number, maxMinutes: number): number {
 }
 
 
-function aggregateByData(sessions: Session[]): Map<string, DayData> {
+function aggregateByDate(sessions: Session[]): Map<string, DayData> {
     const map = new Map<string, DayData>();
 
     for (const s of sessions) {
@@ -132,10 +132,9 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         return list;
     }, [days]);
 
-
-    const mothLabels = useMemo(() => {
+    const monthLabels = useMemo(() => {
         const labels: { index: number; label: string }[] = [];
-        let lastMonthh = -1;
+        let lastMonth = -1;
         weeksList.forEach((week, idx) => {
             const month = week[6] ? week[6].getMonth() : week[0].getMonth();
             if (month !== lastMonth) {
@@ -146,7 +145,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         return labels;
     }, [weeksList]);
 
-    function dataKey(d: Date): string {
+    function dateKey(d: Date): string {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     }
 
@@ -189,7 +188,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
 
                 {/* 週のグリッド */}
                 <div className="flex gap-1">
-                    {weeksList.map((week, w1) => (
+                    {weeksList.map((week, wi) => (
                         <div key={wi} className="flex flex-col gap-1">
                             {week.map((d) => {
                                 const dk = dateKey(d);
