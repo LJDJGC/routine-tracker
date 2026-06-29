@@ -1,8 +1,7 @@
-"use client";
+"use client"; //reactがweb操作できるように宣言する必要がある？
 
-import { useMemo } from "react";
-import type { Session } from "@/src/types";
-import { spawn } from "child_process";
+import { useMemo } from "react"; //こっちがreactでウェブ操作できるようにするやつだっけ？
+import type { Session } from "@/src/types"; //typesというファイルからSessionという方をインポート
 
 
 const TYPE_COLORS: Record<string, string[]> = {
@@ -14,14 +13,14 @@ const TYPE_COLORS: Record<string, string[]> = {
         "bg-blue-800 dark:bg-blue-300",
     ],
     workout: [
-        "bg-gren-50 dark:bg-green-950",
-        "bg-gren-200 dark:bg-green-800",
-        "bg-gren-400 dark:bg-green-600",
-        "bg-gren-600 dark:bg-green-400",
-        "bg-gren-800 dark:bg-green-300",
+        "bg-green-50 dark:bg-green-950",
+        "bg-green-200 dark:bg-green-800",
+        "bg-green-400 dark:bg-green-600",
+        "bg-green-600 dark:bg-green-400",
+        "bg-green-800 dark:bg-green-300",
     ],
 };
-
+//学習と筋トレの色、学習は青、筋肉トレーニングは緑
 
 const DEFAULT_COLORS = [
     "bg-gray-50 dark:bg-zinc-800",
@@ -30,15 +29,15 @@ const DEFAULT_COLORS = [
     "bg-gray-600 dark:bg-zinc-500",
     "bg-gray-800 dark:bg-zinc-400",
 ];
-
+//デフォルトの色は灰色、何も記録されていないときかな？
 
 type DayData = {
-    data: string;
+    date: string;
     total: number;
     byType: Record<string, number>;
     dominantType: string;
 };
-
+//dataは文字列、totalは数字、byTypeは文字列と数字の記録、dominantTypeは文字列で型定義するというDayDataの型を定義
 
 function getLevel(minutes: number, maxMinutes: number): number {
     if (minutes === 0) return 0;
@@ -50,10 +49,10 @@ function getLevel(minutes: number, maxMinutes: number): number {
     if (ratio <= 0.75) return 3;
     return 4;
 }
-
+//minutesとmaxMinutesをnumberで定義するgetlevel,もしminutesが0なら、levelは０、maxMinutesが0ならlevelを1にする。minutesをmaxMinutesで割るratioという変数を定義、ratioが0.1以下なら０、0.25以下0.1以上なら１、0.25以上0.5以下なら2、0.5以上0.75以下なら３を返す。
 
 function aggregateByDate(sessions: Session[]): Map<string, DayData> {
-    const map = new Map<string, DayData>();
+    const map = new Map<string, DayData>(); //Session[]という配列で定義し、それをMapで文字列(string)とDayDataを返すことができる形にして返している。
 
     for (const s of sessions) {
         if (!map.has(s.date)) {
@@ -63,11 +62,10 @@ function aggregateByDate(sessions: Session[]): Map<string, DayData> {
                 byType: {},
                 dominantType: "",
             });
-        }
-        const day = map.get(s.date)!;
+        } //もし、マップにs.dateがないのなら、dateにs.date,toatalに０，byTypeに空配列、dominatTypeを空にする。        const day = map.get(s.date)!;
         day.total += s.duration;
         day.byType[s.type] = (day.byType[s.type] || 0) + s.duration;
-    }
+    } //day.totalにs.durationを合計する。day.byType[s.type]として定義し、day.byType[s.type]か０にs.durationを合計する。ちなみにそれぞれの変数はどんなものか今あまり理解できていない。
 
 
     for (const day of map.values()) {
@@ -83,20 +81,20 @@ function aggregateByDate(sessions: Session[]): Map<string, DayData> {
     }
 
     return map;
-}
+} //map.values()の中のdayを取出してmaxTypeを空白、maxValを０に変数定義し、そのあとObject.entries(day.byType)の配列のtype, valのを一つずつ取出し、maxValにval,maxTypeにtypeを定義する。
 
 
 function formatMonthLabel(date: Date): string {
     return `${date.getFullYear()}年${date.getMonth() + 1}月`;
 }
+// formatMonthLabelでDateという型をstringという文字列で定義し、西暦と月を持ってきてjaascriptの性質上、０から加須せるので、+1で１〜１２月を調整して、返している。
 
-
-const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"];
+const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"]; ///月火水木金土日の曜日を表示する配列を定義する
 
 type Props = {
     sessions: Session[];
     weeks?: number;
-};
+};//Propという型にSession[]という配列をsessionsにして、数字をweeks?に定義する。
 
 export default function GrassCalender({ sessions, weeks = 12 }: Props) {
 
@@ -107,7 +105,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
             if (day.total > max) max = day.total;
         }
         return { dayMap: map, maxDayMinutes: max };
-    }, [sessions]);
+    }, [sessions]);//日毎の時間が０ふんよりも多いなら、dayMapをmapで並べて、maxDayMinutesを０にリセット。
 
 
     const days = useMemo(() => {
@@ -121,7 +119,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
             result.push(d);
         }
         return result;
-    }, [weeks]);
+    }, [weeks]);//日毎の時間を０の初期値に設定し、結果を日付の配列に定義、合計日数を週間と７をかけるので８４かな？正直ここはGitHubと同じように見れるようにしておきたいな。
 
 
     const weeksList = useMemo(() => {
@@ -130,7 +128,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
             list.push(days.slice(i, i + 7));
         }
         return list;
-    }, [days]);
+    }, [days]);//listというDataで２つの空配列を一つの空配列にしているのかな？iを０に定義し、iが日付の長さよりも小さい場合、iに７を足す。そしてlistにdaysをsliceして、iからi+7までのコピーしたものをpushしている。でも、sliceって指定した場所は含まれないんだよね？
 
     const monthLabels = useMemo(() => {
         const labels: { index: number; label: string }[] = [];
@@ -143,11 +141,11 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
             }
         });
         return labels;
-    }, [weeksList]);
+    }, [weeksList]);//indexを数字にlabelを文字列に空配列で定義し、lastMonthは-1で定義、weekの７番目を取出し、weekの１番目（０番目？）をmonthに定義、monthとlastMonthが同じではないのなら、indexの型のidxとlabelの型のormatMonthLabelのweekの１番目（０番目？）をlabelsにプッシュする。lastMonthをmonthに書き換える。そしてlabelsを返す。
 
     function dateKey(d: Date): string {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    }
+    }//dateKeyをstringで文字列にして、例えば2026-06-02のように表すように返している。.padStart(2,"0")でもし人気だでも前に０をおくようにしている。
 
     return (
         <div className="rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900">
@@ -161,16 +159,16 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                 {[0, 1, 2, 3, 4].map((level) => (
                     <span
                         key={level}
-                        className={`inline-block h-3 w-3rounded-sm ${DEFAULT_COLORS[level]}`}
+                        className={`inline-block h-3 w-3 rounded-sm ${DEFAULT_COLORS[level]}`}
                     />
-                ))}
+                ))} {/* 0~4までの５つのレベルがあり、それをマップで当てはまるレベルに振り分けて、草の濃さを決めている。*/}
                 <span>多</span>
-                <span className="m;-2">|</span>
-                <span className="inLine-block h-3 w-3 rounded-sm bg-nblue-400">
+                <span className="ml-2">|</span>
+                <span className="inline-block h-3 w-3 rounded-sm bg-blue-400">
                     Study
                 </span>
                 <span className="flex item-center gap-1">
-                    <span className="inLine-block h-3 w-3 rounded-sm bg-green-400" />
+                    <span className="inline-block h-3 w-3 rounded-sm bg-green-400" />
                     Workout
                 </span>
             </div>
@@ -182,7 +180,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                     {monthLabels.map((m) => (
                         <span key={m.index} style={{ marginTop: m.index === 0 ? 0 : 14 }}>
                             {m.label}
-                        </span>
+                        </span>{/* 14だから２週間分かな？でも変数名がmonthLabelsだから月ごとなんだろうけど、私の知識だとこのコード見て月ごとであるという認識はできないな。*/ }
                     ))}
                 </div>
 
@@ -205,9 +203,9 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                                     <div
                                         key={dk}
                                         title={`${dk}: ${total > 0 ? `${total}分` : "記載なし"}`}
-                                        className={`h-3 w-3 rounded-sm ${colors[level]} ${isToday ? "ring-2 ring-blue-400 ring-offset--1 dark:ring-offset-zinc-900" : ""}`}
+                                        className={`h-3 w-3 rounded-sm ${colors[level]} ${isToday ? "ring-2 ring-blue-400 ring-offset-1 dark:ring-offset-zinc-900" : ""}`}
                                     />
-                                );
+                                );//週のグリットと書いてあるが、中を見ると日毎の合計分数な気がする。
                             })}
                         </div>
                     ))}
@@ -225,8 +223,8 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                             {Array.from(dayMap.values()).reduce(
                                 (sum, d) => sum + (d.byType["study"] || 0),
                                 0
-                            )}
-                            <span className="ml-1 text-sm font-nomal">分</span>
+                            )}{/* おそらく今までの合計分数を見れる。これは勉強*/}
+                            <span className="ml-1 text-sm font-normal">分</span>
                         </p>
                     </div>
                     <div className="rounded-lg bg-green-50 p-3 dark:bg-green-950">
@@ -237,8 +235,8 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                             {Array.from(dayMap.values()).reduce(
                                 (sum, d) => sum + (d.byType["workout"] || 0),
                                 0
-                            )}
-                            <span className="ml-1 text-sm font-nomal">分</span>
+                            )}{/* これは筋トレの今までの合計分数*/}
+                            <span className="ml-1 text-sm font-normal">分</span>
                         </p>
                     </div>
                 </div>
