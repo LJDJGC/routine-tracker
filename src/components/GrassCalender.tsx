@@ -83,3 +83,11 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
   }
 }
 
+function formatMonthLabel(dateStr: string): string {
+  const date = new Date(dateStr);
+  const month = date.getMonth();
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return MONTHS[month];
+}
+
