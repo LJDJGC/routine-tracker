@@ -47,10 +47,39 @@ function dateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-export default function GrassCalender({ sessions, weeks = 12 }: Props) {
-  // useMemo x4 をここに書く（ヒント: sessions→dayMap, weeks→days, days→weeksList, weeksList→monthLabels）
-  // aggregateByDate / getLevel / formatMonthLabel を定義する
-  // JSX: 凡例 → カレンダーグリッド(月ラベル+週×日セル) → サマリーカード
+// useMemo x4 をここに書く（ヒント: sessions→dayMap, weeks→days, days→weeksList, weeksList→monthLabels）
+// aggregateByDate / getLevel / formatMonthLabel を定義する
+// JSX: 凡例 → カレンダーグリッド(月ラベル+週×日セル) → サマリーカード
 
-  return <div />;
-}    
+
+function aggregateByDate(sessions: Session[]) {
+  const map = new Map<string, DayData>();
+  for (const session of sessions) {
+    if (!map.has(session.date)) {
+      map.set(session.date, {
+        date: session.date,
+        total: 0,
+        byType: {},
+        dominantType: "",
+      });
+    }
+    const day = map.get(session.date)!;
+    day.total += session.duration;
+    day.byType[session.type] = (day.byType[session.type] || 0) + session.duration;
+  }
+
+  return map;
+}
+
+export default function GrassCalender({ sessions, weeks = 12 }: Props) {
+  const dayMap = useMemo(() => aggregateByDate(sessions), [sessions]);
+  function getLevel(dayData, type) {
+    const value = dayData?.byType[type] ?? 0;
+    if (value === 0) return 0;
+    if (value <= 40) return 1;
+    if (value <= 60) return 2;
+    if (value <= 80) return 3;
+    return 4;
+  }
+}
+
