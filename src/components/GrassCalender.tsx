@@ -73,6 +73,8 @@ function aggregateByDate(sessions: Session[]) {
 
 export default function GrassCalender({ sessions, weeks = 12 }: Props) {
   const dayMap = useMemo(() => aggregateByDate(sessions), [sessions]);
+  const days = useMemo(() => weeksDays(weeks), [weeks]);
+
   function getLevel(dayData, type) {
     const value = dayData?.byType[type] ?? 0;
     if (value === 0) return 0;
@@ -89,5 +91,17 @@ function formatMonthLabel(dateStr: string): string {
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return MONTHS[month];
+}
+
+function weeksDays(weeks: number): string[] {
+  const today = new Date();
+  const totalDays = weeks * 7;
+  const daysList: string[] = [];
+  for (let i = 0; i < totalDays; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    daysList.push(dateKey(date));
+  }
+  return daysList;
 }
 
