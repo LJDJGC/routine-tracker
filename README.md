@@ -128,6 +128,6 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 
 ## 🔗 リンク
 
-- デモ: [VercelデプロイURL]
-- Wantedly: [プロフィールURL]
-- TILログ: [TILリポジトリURL]
+- デモ: [https://routine-tracker-vert-seven.vercel.app/]
+- Wantedly: [https://www.wantedly.com/id/shouta_watanabe_dr]
+- TILログ: [https://github.com/LJDJGC/my-til-log]
