@@ -77,7 +77,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
   const weekList = useMemo(() => daysToWeekList(days), [days]);
   const monthLabels = useMemo(() => weekListToMonthLabels(weekList), [weekList]);
 
-  function getLevel(dayData, type) {
+  function getLevel(dayData: DayData | undefined, type: string): number {
     const value = dayData?.byType[type] ?? 0;
     if (value === 0) return 0;
     if (value <= 40) return 1;
@@ -85,7 +85,34 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
     if (value <= 80) return 3;
     return 4;
   }
-}
+
+  return (
+    <div>
+      {/* 月ラベル */}
+      <div>
+        {monthLabels.map((label, i) => (
+          <span key={i}>{label ?? ""}</span>
+        ))}
+      </div>
+
+      {/* 曜日行 x 週セル*/}
+      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((dayName, dayIndex) => (
+        <div key={dayIndex}>
+          <span>{dayName}</span>
+          {weekList.map((week, weekIndex) => {
+            const dateStr = week[dayIndex];
+            const dayData = dayMap.get(dateStr);
+
+            const level = getLevel(dayData, "study");
+            const colorClass = TYPE_COLORS["study"][level];
+
+            return <span key={weekIndex} className={colorClass}>■</span>;
+          })}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 function formatMonthLabel(dateStr: string): string {
   const date = new Date(dateStr);
