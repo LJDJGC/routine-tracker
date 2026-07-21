@@ -100,7 +100,7 @@ type Props = {
 export default function GrassCalender({ sessions, weeks = 12 }: Props) {
 
     const { dayMap, maxDayMinutes } = useMemo(() => {
-        const map = aggregateByDate(sessions);
+        const map = aggregateByData(sessions);
         let max = 0;
         for (const day of map.values()) {
             if (day.total > max) max = day.total;
@@ -132,9 +132,9 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
     }, [days]);
 
 
-    const mothLabels = useMemo(() => {
+    const monthLabels = useMemo(() => {
         const labels: { index: number; label: string }[] = [];
-        let lastMonthh = -1;
+        let lastMonth = -1;
         weeksList.forEach((week, idx) => {
             const month = week[6] ? week[6].getMonth() : week[0].getMonth();
             if (month !== lastMonth) {
@@ -156,21 +156,21 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
             </h2>
 
             {/*　凡例 */}
-            <div className="mb-3 flex item-center gap-4 text-xs text-gray-500 dark:text-zinc-400">
+            <div className="mb-3 flex items-center gap-4 text-xs text-gray-500 dark:text-zinc-400">
                 <span>少</span>
                 {[0, 1, 2, 3, 4].map((level) => (
                     <span
                         key={level}
-                        className={`inline-block h-3 w-3rounded-sm ${DEFAULT_COLORS[level]}`}
+                        className={`inline-block h-3 w-3 rounded-sm ${DEFAULT_COLORS[level]}`}
                     />
                 ))}
                 <span>多</span>
-                <span className="m;-2">|</span>
-                <span className="inLine-block h-3 w-3 rounded-sm bg-nblue-400">
+                <span className="mx-2">|</span>
+                <span className="inline-block h-3 w-3 rounded-sm bg-blue-400">
                     Study
                 </span>
-                <span className="flex item-center gap-1">
-                    <span className="inLine-block h-3 w-3 rounded-sm bg-green-400" />
+                <span className="flex items-center gap-1">
+                    <span className="inline-block h-3 w-3 rounded-sm bg-green-400" />
                     Workout
                 </span>
             </div>
@@ -189,7 +189,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                 {/* 週のグリッド */}
                 <div className="flex gap-1">
                     {weeksList.map((week, w1) => (
-                        <div key={wi} className="flex flex-col gap-1">
+                        <div key={w1} className="flex flex-col gap-1">
                             {week.map((d) => {
                                 const dk = dateKey(d);
                                 const dayData = dayMap.get(dk);
@@ -205,7 +205,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                                     <div
                                         key={dk}
                                         title={`${dk}: ${total > 0 ? `${total}分` : "記載なし"}`}
-                                        className={`h-3 w-3 rounded-sm ${colors[level]} ${isToday ? "ring-2 ring-blue-400 ring-offset--1 dark:ring-offset-zinc-900" : ""}`}
+                                        className={`h-3 w-3 rounded-sm ${colors[level]} ${isToday ? "ring-2 ring-blue-400 ring-offset-1 dark:ring-offset-zinc-900" : ""}`}
                                     />
                                 );
                             })}
@@ -221,12 +221,12 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                         <p className="text-xs text-gray-500 dark:text-zinc-400">
                             学習時間
                         </p>
-                        <p className="text-xl font-bold text-blue-700 dark: text-blue-300">
+                        <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
                             {Array.from(dayMap.values()).reduce(
                                 (sum, d) => sum + (d.byType["study"] || 0),
                                 0
                             )}
-                            <span className="ml-1 text-sm font-nomal">分</span>
+                            <span className="ml-1 text-sm font-normal">分</span>
                         </p>
                     </div>
                     <div className="rounded-lg bg-green-50 p-3 dark:bg-green-950">
@@ -238,7 +238,7 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                                 (sum, d) => sum + (d.byType["workout"] || 0),
                                 0
                             )}
-                            <span className="ml-1 text-sm font-nomal">分</span>
+                            <span className="ml-1 text-sm font-normal">分</span>
                         </p>
                     </div>
                 </div>

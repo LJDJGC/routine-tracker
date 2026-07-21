@@ -1,384 +1,209 @@
-"use client"; //reactで操作できるようにする。説明をカンニングしてしまったらブラウザで動くよという意味らしい
+"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useUser, SignInButton, SignOutButton } from "@clerk/nextjs";
 import { Session } from "@/src/types";
-import { auth, db, googleProvider, isFirebaseAvailable } from "@/src/lib/firebase";
-import GrassCalendar from "@/src/components/GrassCalendar"; //GrassCalendarファイルからインポートしている
-import {
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-  User,
-} from "firebase/auth";
-import {
-  collection,
-  doc,
-  setDoc,
-  deleteDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import GrassCalendar from "@/src/components/GrassCalendar";
+import { getSupabase } from "@/src/lib/supabase";
+
 export default function Home() {
+  const { isLoaded, isSignedIn, user } = useUser();
   const [newType, setNewType] = useState<Session["type"]>("study");
   const [newDuration, setNewDuration] = useState<number>(0);
   const [newDate, setNewDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
   const [newNote, setNewNote] = useState<string>("");
-
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchSessions = useCallback(async () => {
+    if (!isSignedIn || !user) return;
+    setLoading(true);
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false });
+      if (!error && data) {
+        setSessions(data as Session[]);
+      }
+    } catch (e) {
+      console.error("Supabase 未設定:", e);
+    }
+    setLoading(false);
+  }, [isSignedIn, user]);
 
   useEffect(() => {
-    // Firebaseが利用できない場合（Vercelビルド時など）はlocalStorageのみ使用
-    if (!auth || !db) {
+    if (isLoaded && isSignedIn) {
+      fetchSessions();
+    } else if (isLoaded && !isSignedIn) {
       setLoading(false);
-      return;
     }
+  }, [isLoaded, isSignedIn, fetchSessions]);
 
-    const firestore = db;
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      setLoading(true);
-
-      if (currentUser) {
-        try {
-          const q = query(
-            collection(firestore, "sessions"),
-            where("userId", "==", currentUser.uid)
-          );
-          const querySnapshot = await getDocs(q);
-          const firestoreSessions: Session[] = [];
-          querySnapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            firestoreSessions.push({
-              id: docSnap.id,
-              type: data.type,
-              duration: data.duration,
-              date: data.date,
-              note: data.note,
-            });
-          });
-
-          const localData = localStorage.getItem("sessions");
-          if (localData) {
-            const localSessions = JSON.parse(localData) as Session[];
-            if (localSessions.length > 0) {
-              for (const localSession of localSessions) {
-                const docRef = doc(collection(firestore, "sessions"));
-                await setDoc(docRef, {
-                  userId: currentUser.uid,
-                  type: localSession.type,
-                  duration: localSession.duration,
-                  date: localSession.date,
-                  note: localSession.note || "",
-                });
-                firestoreSessions.push({
-                  id: docRef.id,
-                  type: localSession.type,
-                  duration: localSession.duration,
-                  date: localSession.date,
-                  note: localSession.note,
-                });
-              }
-              localStorage.removeItem("sessions");
-            }
-          }
-          setSessions(firestoreSessions);
-        } catch (error) {
-          console.error("Error syncing firestore:", error);
-        }
-      } else {
-        const localData = localStorage.getItem("sessions");
-        if (localData) {
-          setSessions(JSON.parse(localData));
-        } else {
-          const initialData = [
-            {
-              id: "1",
-              type: "study",
-              duration: 60,
-              date: "2024-04-23",
-              note: "Next.js learning",
-            },
-            {
-              id: "2",
-              type: "workout",
-              duration: 45,
-              date: "2024-04-22",
-              note: "Upper body",
-            },
-            {
-              id: "3",
-              type: "study",
-              duration: 120,
-              date: "2024-04-21",
-              note: "Tailwind CSS deep dive",
-            },
-          ];
-          setSessions(initialData);
-          localStorage.setItem("sessions", JSON.stringify(initialData));
-        }
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const handleSignIn = async () => {
-    if (!auth || !googleProvider) return;
+  const addSession = async () => {
+    if (newDuration <= 0 || !user) return;
     try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Sign in failed:", error);
-    }
-  };
-
-  const handleSignOut = async () => {
-    if (!auth) return;
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Sign out failed:", error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (user && db) {
-      try {
-        const docRef = doc(collection(db, "sessions"));
-        const newSessionData = {
-          userId: user.uid,
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from("sessions")
+        .insert({
+          user_id: user.id,
           type: newType,
           duration: newDuration,
           date: newDate,
-          note: newNote,
-        };
-        await setDoc(docRef, newSessionData);
-        const newSession: Session = {
-          id: docRef.id,
-          type: newType,
-          duration: newDuration,
-          date: newDate,
-          note: newNote,
-        };
-        setSessions([...sessions, newSession]);
-      } catch (error) {
-        console.error("Error adding to Firestore:", error);
+          note: newNote || "",
+        })
+        .select()
+        .single();
+      if (!error && data) {
+        setSessions((prev) => [data as Session, ...prev]);
+        setNewDuration(0);
+        setNewNote("");
       }
-    } else {
-      const newSession: Session = {
-        id: crypto.randomUUID(),
-        type: newType,
-        duration: newDuration,
-        date: newDate,
-        note: newNote,
-      };
-      const updated = [...sessions, newSession];
-      setSessions(updated);
-      localStorage.setItem("sessions", JSON.stringify(updated));
-    }
-
-    setNewType("study");
-    setNewDuration(0);
-    setNewDate(new Date().toISOString().split("T")[0]);
-    setNewNote("");
-  };
-
-  const handleDelete = async (id: string) => {
-    if (user && db) {
-      try {
-        await deleteDoc(doc(db, "sessions", id));
-        setSessions(sessions.filter((session) => session.id !== id));
-      } catch (error) {
-        console.error("Error deleting from Firestore:", error);
-      }
-    } else {
-      const updated = sessions.filter((session) => session.id !== id);
-      setSessions(updated);
-      localStorage.setItem("sessions", JSON.stringify(updated));
+    } catch (e) {
+      console.error("Supabase 未設定:", e);
     }
   };
+
+  const removeSession = async (id: string) => {
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.from("sessions").delete().eq("id", id);
+      if (!error) {
+        setSessions((prev) => prev.filter((s) => s.id !== id));
+      }
+    } catch (e) {
+      console.error("Supabase 未設定:", e);
+    }
+  };
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">読み込み中...</p>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold">Routine Tracker</h1>
+          <p className="text-gray-600">
+            学習と筋トレの記録を可視化しよう
+          </p>
+          <SignInButton mode="modal">
+            <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              Google でログイン
+            </button>
+          </SignInButton>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-gray-50 p-8 dark:bg-zinc-950">
-      <main className="w-full max-w-2xl">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Learning Records
-          </h1>
-          <div>
-            {user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 dark:text-zinc-400">
-                  {user.displayName}
-                </span>
-                <button
-                  onClick={handleSignOut}
-                  className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleSignIn}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
-              >
-                Sign In with Google
-              </button>
-            )}
-          </div>
+    <main className="flex flex-col gap-8 px-4 py-8 max-w-3xl mx-auto w-full">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Routine Tracker</h1>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600">
+            {user.emailAddresses?.[0]?.emailAddress ?? user.id}
+          </span>
+          <SignOutButton>
+            <button className="text-sm text-red-500 hover:text-red-700">
+              ログアウト
+            </button>
+          </SignOutButton>
         </div>
+      </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="mb-8 rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900"
-        >
-          <div className="mb-4">
-            <label
-              htmlFor="type"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Type
-            </label>
-            <select
-              name="type"
-              id="type"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value as Session["type"])}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            >
-              <option value="study">Study</option>
-              <option value="workout">Workout</option>
-            </select>
-          </div>
+      <GrassCalendar sessions={sessions} />
 
-          <div className="mb-4">
-            <label
-              htmlFor="duration"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Duration (minutes)
-            </label>
-            <input
-              type="number"
-              id="duration"
-              name="duration"
-              min="1"
-              value={newDuration}
-              onChange={(e) => setNewDuration(Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="date"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Date
-            </label>
-            <input
-              type="date"
-              name="date"
-              id="date"
-              value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="note"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Note
-            </label>
-            <textarea
-              name="note"
-              id="note"
-              rows={3}
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-md bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
+      <section className="border rounded-lg p-4 space-y-4">
+        <h2 className="text-lg font-semibold">セッションを追加</h2>
+        <div className="flex flex-wrap gap-2">
+          <select
+            value={newType}
+            onChange={(e) => setNewType(e.target.value)}
+            className="border rounded px-3 py-2"
           >
-            Add Record
+            <option value="study">学習</option>
+            <option value="workout">筋トレ</option>
+          </select>
+          <input
+            type="number"
+            placeholder="時間（分）"
+            value={newDuration || ""}
+            onChange={(e) => setNewDuration(Number(e.target.value))}
+            className="border rounded px-3 py-2 w-32"
+          />
+          <input
+            type="date"
+            value={newDate}
+            onChange={(e) => setNewDate(e.target.value)}
+            className="border rounded px-3 py-2"
+          />
+          <input
+            type="text"
+            placeholder="メモ（任意）"
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            className="border rounded px-3 py-2 flex-1 min-w-40"
+          />
+          <button
+            onClick={addSession}
+            disabled={newDuration <= 0}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            追加
           </button>
-        </form>
+        </div>
+      </section>
 
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">履歴</h2>
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-          </div>
+          <p className="text-gray-500">読み込み中...</p>
+        ) : sessions.length === 0 ? (
+          <p className="text-gray-500">まだ記録がありません</p>
         ) : (
-          <div className="space-y-4">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className={`rounded-xl border-l-8 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:bg-zinc-900 ${session.type === "study" ? "border-blue-500" : "border-green-500"
+          sessions.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-center justify-between border rounded p-3"
+            >
+              <div className="flex gap-4 items-center">
+                <span
+                  className={`text-sm font-medium px-2 py-0.5 rounded ${
+                    s.type === "study"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-green-100 text-green-700"
                   }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-zinc-100">
-                      {session.type}
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-zinc-400">
-                      {session.date}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {session.duration}
-                      </span>
-                      <span className="ml-1 text-sm text-gray-500">min</span>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(session.id)}
-                      className="rounded-lg bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-                      aria-label="Delete record"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {session.note && (
-                  <p className="mt-3 text-gray-600 dark:text-zinc-300">
-                    {session.note}
-                  </p>
+                >
+                  {s.type === "study" ? "学習" : "筋トレ"}
+                </span>
+                <span className="text-sm text-gray-600">{s.date}</span>
+                <span className="font-medium">{s.duration}分</span>
+                {s.note && (
+                  <span className="text-sm text-gray-500">{s.note}</span>
                 )}
               </div>
-            ))}
-          </div>
+              <button
+                onClick={() => removeSession(s.id)}
+                className="text-red-400 hover:text-red-600 text-sm"
+              >
+                削除
+              </button>
+            </div>
+          ))
         )}
-      </main>
-    </div>
+      </section>
+    </main>
   );
-} 
+}
