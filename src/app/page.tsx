@@ -236,6 +236,10 @@ export default function Home() {
           </div>
         </div>
 
+        <div className="mb-8">
+          <GrassCalendar sessions={sessions} />
+        </div>
+
         <form
           onSubmit={handleSubmit}
           className="mb-8 rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900"

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Routine Tracker | 学習×筋トレ×英語学習トラッカー",
-  description: "学習・筋トレ・英語イマージョンを可視化する統合トラッカー",
+  title: "Routine Tracker | 学習 × 筋トレ トラッカー",
+  description: "学習と筋トレのデータを可視化し、生活バランスを最適化する統合トラッカー",
 };
 
 export default function RootLayout({
