@@ -32,64 +32,73 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Firebaseが利用できない場合（Vercelビルド時など）はlocalStorageのみ使用
     if (!auth || !db) {
       setLoading(false);
       return;
     }
 
     const firestore = db;
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      setLoading(true);
 
       if (currentUser) {
-        try {
-          const q = query(
-            collection(firestore, "sessions"),
-            where("userId", "==", currentUser.uid)
-          );
-          const querySnapshot = await getDocs(q);
-          const firestoreSessions: Session[] = [];
-          querySnapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            firestoreSessions.push({
-              id: docSnap.id,
-              type: data.type,
-              duration: data.duration,
-              date: data.date,
-              note: data.note,
-            });
-          });
-
-          const localData = localStorage.getItem("sessions");
-          if (localData) {
-            const localSessions = JSON.parse(localData) as Session[];
-            if (localSessions.length > 0) {
-              for (const localSession of localSessions) {
-                const docRef = doc(collection(firestore, "sessions"));
-                await setDoc(docRef, {
-                  userId: currentUser.uid,
-                  type: localSession.type,
-                  duration: localSession.duration,
-                  date: localSession.date,
-                  note: localSession.note || "",
-                });
-                firestoreSessions.push({
-                  id: docRef.id,
-                  type: localSession.type,
-                  duration: localSession.duration,
-                  date: localSession.date,
-                  note: localSession.note,
-                });
-              }
-              localStorage.removeItem("sessions");
-            }
-          }
-          setSessions(firestoreSessions);
-        } catch (error) {
-          console.error("Error syncing firestore:", error);
+        const localData = localStorage.getItem("sessions");
+        if (localData) {
+          setSessions(JSON.parse(localData));
+          setLoading(false);
+        } else {
+          setLoading(false);
         }
+
+        // Firestore はバックグラウンドで試行（失敗しても localStorage が残る）
+        (async () => {
+          try {
+            const q = query(
+              collection(firestore, "sessions"),
+              where("userId", "==", currentUser.uid)
+            );
+            const querySnapshot = await getDocs(q);
+            const firestoreSessions: Session[] = [];
+            querySnapshot.forEach((docSnap) => {
+              const data = docSnap.data();
+              firestoreSessions.push({
+                id: docSnap.id,
+                type: data.type,
+                duration: data.duration,
+                date: data.date,
+                note: data.note,
+              });
+            });
+
+            const localData2 = localStorage.getItem("sessions");
+            if (localData2) {
+              const localSessions = JSON.parse(localData2) as Session[];
+              if (localSessions.length > 0) {
+                for (const localSession of localSessions) {
+                  const docRef = doc(collection(firestore, "sessions"));
+                  await setDoc(docRef, {
+                    userId: currentUser.uid,
+                    type: localSession.type,
+                    duration: localSession.duration,
+                    date: localSession.date,
+                    note: localSession.note || "",
+                  });
+                  firestoreSessions.push({
+                    id: docRef.id,
+                    type: localSession.type,
+                    duration: localSession.duration,
+                    date: localSession.date,
+                    note: localSession.note,
+                  });
+                }
+                localStorage.removeItem("sessions");
+              }
+            }
+            setSessions(firestoreSessions);
+          } catch (error) {
+            console.error("Firestore 同期失敗（localStorage で継続）:", error);
+          }
+        })();
       } else {
         const localData = localStorage.getItem("sessions");
         if (localData) {
@@ -121,8 +130,8 @@ export default function Home() {
           setSessions(initialData);
           localStorage.setItem("sessions", JSON.stringify(initialData));
         }
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -149,39 +158,28 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const newSession: Session = {
+      id: crypto.randomUUID(),
+      type: newType,
+      duration: newDuration,
+      date: newDate,
+      note: newNote,
+    };
+
+    const updated = [...sessions, newSession];
+    setSessions(updated);
+    localStorage.setItem("sessions", JSON.stringify(updated));
+
     if (user && db) {
-      try {
-        const docRef = doc(collection(db, "sessions"));
-        const newSessionData = {
-          userId: user.uid,
-          type: newType,
-          duration: newDuration,
-          date: newDate,
-          note: newNote,
-        };
-        await setDoc(docRef, newSessionData);
-        const newSession: Session = {
-          id: docRef.id,
-          type: newType,
-          duration: newDuration,
-          date: newDate,
-          note: newNote,
-        };
-        setSessions([...sessions, newSession]);
-      } catch (error) {
-        console.error("Error adding to Firestore:", error);
-      }
-    } else {
-      const newSession: Session = {
-        id: crypto.randomUUID(),
+      setDoc(doc(collection(db, "sessions")), {
+        userId: user.uid,
         type: newType,
         duration: newDuration,
         date: newDate,
         note: newNote,
-      };
-      const updated = [...sessions, newSession];
-      setSessions(updated);
-      localStorage.setItem("sessions", JSON.stringify(updated));
+      }).catch((error) => {
+        console.error("Firestore 保存失敗:", error);
+      });
     }
 
     setNewType("study");
@@ -190,18 +188,15 @@ export default function Home() {
     setNewNote("");
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
+    const updated = sessions.filter((session) => session.id !== id);
+    setSessions(updated);
+    localStorage.setItem("sessions", JSON.stringify(updated));
+
     if (user && db) {
-      try {
-        await deleteDoc(doc(db, "sessions", id));
-        setSessions(sessions.filter((session) => session.id !== id));
-      } catch (error) {
-        console.error("Error deleting from Firestore:", error);
-      }
-    } else {
-      const updated = sessions.filter((session) => session.id !== id);
-      setSessions(updated);
-      localStorage.setItem("sessions", JSON.stringify(updated));
+      deleteDoc(doc(db, "sessions", id)).catch((error) => {
+        console.error("Firestore 削除失敗:", error);
+      });
     }
   };
 
