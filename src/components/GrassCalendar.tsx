@@ -92,6 +92,54 @@ function formatMonthLabel(date: Date): string {
 
 const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"];
 
+function dateKey(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// 今日から過去に遡って、連続で活動した日数を数える
+function getCurrentStreak(dayMap: Map<string, DayData>): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const day = dayMap.get(dateKey(d));
+        if (day && day.total > 0) {
+            streak++;
+        } else {
+            break;
+        }
+    }
+    return streak;
+}
+
+// 全期間で最長の連続日数を求める
+function getLongestStreak(dayMap: Map<string, DayData>): number {
+    if (dayMap.size === 0) return 0;
+
+    const dates = Array.from(dayMap.keys()).sort();
+    const earliest = new Date(dates[0]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let longest = 0;
+    let current = 0;
+    const d = new Date(earliest);
+
+    while (d <= today) {
+        const day = dayMap.get(dateKey(d));
+        if (day && day.total > 0) {
+            current++;
+            if (current > longest) longest = current;
+        } else {
+            current = 0;
+        }
+        d.setDate(d.getDate() + 1);
+    }
+    return longest;
+}
+
 type Props = {
     sessions: Session[];
     weeks?: number;
@@ -145,9 +193,10 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
         return labels;
     }, [weeksList]);
 
-    function dateKey(d: Date): string {
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    }
+    const { currentStreak, longestStreak } = useMemo(() => ({
+        currentStreak: getCurrentStreak(dayMap),
+        longestStreak: getLongestStreak(dayMap),
+    }), [dayMap]);
 
     return (
         <div className="rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900">
@@ -213,6 +262,21 @@ export default function GrassCalender({ sessions, weeks = 12 }: Props) {
                     ))}
                 </div>
             </div>
+
+            {/* ストリーク */}
+            {dayMap.size > 0 && (
+                <div className="mt-4 flex items-center gap-4 text-sm">
+                    <span className="flex items-center gap-1">
+                        <span className="text-lg">🔥</span>
+                        <span className="font-semibold text-gray-800 dark:text-zinc-200">
+                            {currentStreak}日連続
+                        </span>
+                        <span className="text-gray-400 dark:text-zinc-500">
+                            · 最長 {longestStreak}日
+                        </span>
+                    </span>
+                </div>
+            )}
 
             {/* サマリー */}
             {dayMap.size > 0 && (
