@@ -104,7 +104,7 @@ export default function Home() {
         if (localData) {
           setSessions(JSON.parse(localData));
         } else {
-          const initialData = [
+          const initialData: Session[] = [
             {
               id: "1",
               type: "study",
