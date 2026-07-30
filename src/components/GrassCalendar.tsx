@@ -90,8 +90,6 @@ function formatMonthLabel(date: Date): string {
 }
 
 
-const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"];
-
 type Props = {
     sessions: Session[];
     weeks?: number;

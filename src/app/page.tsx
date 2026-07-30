@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
-import { auth, db, googleProvider, isFirebaseAvailable } from "@/src/lib/firebase";
+import { auth, db, googleProvider } from "@/src/lib/firebase";
 import GrassCalendar from "@/src/components/GrassCalendar"; //GrassCalendarファイルからインポートしている
 import {
   signInWithPopup,
@@ -29,13 +29,10 @@ export default function Home() {
 
   const [sessions, setSessions] = useState<Session[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !auth || !db ? false : true);
 
   useEffect(() => {
-    if (!auth || !db) {
-      setLoading(false);
-      return;
-    }
+    if (!auth || !db) return;
 
     const firestore = db;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
