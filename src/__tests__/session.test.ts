@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Session, SessionType } from "@/src/types";
+import type { Session } from "@/src/types";
 
 describe("Session", () => {
   it("creates a study session", () => {

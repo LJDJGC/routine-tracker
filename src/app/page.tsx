@@ -1,9 +1,12 @@
-"use client"; //reactで操作できるようにする。説明をカンニングしてしまったらブラウザで動くよという意味らしい
+"use client";
 
 import { useState, useEffect } from "react";
 import { Session } from "@/src/types";
 import { auth, db, googleProvider } from "@/src/lib/firebase";
-import GrassCalendar from "@/src/components/GrassCalendar"; //GrassCalendarファイルからインポートしている
+import GrassCalendar from "@/src/components/GrassCalendar";
+import AuthButtons from "@/src/components/AuthButtons";
+import SessionForm from "@/src/components/SessionForm";
+import SessionList from "@/src/components/SessionList";
 import {
   signInWithPopup,
   signOut,
@@ -19,17 +22,11 @@ import {
   query,
   where,
 } from "firebase/firestore";
-export default function Home() {
-  const [newType, setNewType] = useState<Session["type"]>("study");
-  const [newDuration, setNewDuration] = useState<number>(0);
-  const [newDate, setNewDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
-  const [newNote, setNewNote] = useState<string>("");
 
+export default function Home() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(() => !auth || !db ? false : true);
+  const [loading, setLoading] = useState(() => (!auth || !db ? false : true));
 
   useEffect(() => {
     if (!auth || !db) return;
@@ -93,7 +90,10 @@ export default function Home() {
             }
             setSessions(firestoreSessions);
           } catch (error) {
-            console.error("Firestore 同期失敗（localStorage で継続）:", error);
+            console.error(
+              "Firestore 同期失敗（localStorage で継続）:",
+              error
+            );
           }
         })();
       } else {
@@ -152,15 +152,15 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleFormSubmit = (data: {
+    type: Session["type"];
+    duration: number;
+    date: string;
+    note: string;
+  }) => {
     const newSession: Session = {
       id: crypto.randomUUID(),
-      type: newType,
-      duration: newDuration,
-      date: newDate,
-      note: newNote,
+      ...data,
     };
 
     const updated = [...sessions, newSession];
@@ -170,19 +170,11 @@ export default function Home() {
     if (user && db) {
       setDoc(doc(collection(db, "sessions")), {
         userId: user.uid,
-        type: newType,
-        duration: newDuration,
-        date: newDate,
-        note: newNote,
+        ...data,
       }).catch((error) => {
         console.error("Firestore 保存失敗:", error);
       });
     }
-
-    setNewType("study");
-    setNewDuration(0);
-    setNewDate(new Date().toISOString().split("T")[0]);
-    setNewNote("");
   };
 
   const handleDelete = (id: string) => {
@@ -204,177 +196,25 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
             Learning Records
           </h1>
-          <div>
-            {user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 dark:text-zinc-400">
-                  {user.displayName}
-                </span>
-                <button
-                  onClick={handleSignOut}
-                  className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-300 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleSignIn}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
-              >
-                Sign In with Google
-              </button>
-            )}
-          </div>
+          <AuthButtons
+            user={user}
+            onSignIn={handleSignIn}
+            onSignOut={handleSignOut}
+          />
         </div>
 
         <div className="mb-8">
           <GrassCalendar sessions={sessions} />
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="mb-8 rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900"
-        >
-          <div className="mb-4">
-            <label
-              htmlFor="type"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Type
-            </label>
-            <select
-              name="type"
-              id="type"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value as Session["type"])}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            >
-              <option value="study">Study</option>
-              <option value="workout">Workout</option>
-            </select>
-          </div>
+        <SessionForm onSubmit={handleFormSubmit} />
 
-          <div className="mb-4">
-            <label
-              htmlFor="duration"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Duration (minutes)
-            </label>
-            <input
-              type="number"
-              id="duration"
-              name="duration"
-              min="1"
-              value={newDuration}
-              onChange={(e) => setNewDuration(Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="date"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Date
-            </label>
-            <input
-              type="date"
-              name="date"
-              id="date"
-              value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="note"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-zinc-300"
-            >
-              Note
-            </label>
-            <textarea
-              name="note"
-              id="note"
-              rows={3}
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              className="w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-md bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-800"
-          >
-            Add Record
-          </button>
-        </form>
-
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className={`rounded-xl border-l-8 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:bg-zinc-900 ${session.type === "study" ? "border-blue-500" : "border-green-500"
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold capitalize text-gray-800 dark:text-zinc-100">
-                      {session.type}
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-zinc-400">
-                      {session.date}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {session.duration}
-                      </span>
-                      <span className="ml-1 text-sm text-gray-500">min</span>
-                    </div>
-                    <button
-                      onClick={() => handleDelete(session.id)}
-                      className="rounded-lg bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-                      aria-label="Delete record"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                {session.note && (
-                  <p className="mt-3 text-gray-600 dark:text-zinc-300">
-                    {session.note}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <SessionList
+          sessions={sessions}
+          loading={loading}
+          onDelete={handleDelete}
+        />
       </main>
     </div>
   );
-} 
+}
