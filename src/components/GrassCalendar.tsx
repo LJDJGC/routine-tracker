@@ -85,7 +85,7 @@ function aggregateByData(sessions: Session[]): Map<string, DayData> {
 }
 
 
-function formatMonthLabel(date: Date): string {
+export function formatMonthLabel(date: Date): string {
     return `${date.getFullYear()}年${date.getMonth() + 1}月`;
 }
 
