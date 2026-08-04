@@ -85,12 +85,10 @@ function aggregateByData(sessions: Session[]): Map<string, DayData> {
 }
 
 
-function formatMonthLabel(date: Date): string {
+export function formatMonthLabel(date: Date): string {
     return `${date.getFullYear()}年${date.getMonth() + 1}月`;
 }
 
-
-const WEEKDAY_LABELS = ["月", "火", "水", "木", "金", "土", "日"];
 
 type Props = {
     sessions: Session[];
