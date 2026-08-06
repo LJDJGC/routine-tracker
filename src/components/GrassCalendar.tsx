@@ -30,3 +30,5 @@ const getLevel = (minutes: number, maxMinutes: number): number => {
     if (ratio <= 0.75) return 3;
     return 4;
 }
+
+const aggregateByData = (sessions: Sessions[]) : 
