@@ -104,7 +104,7 @@ Routine Trackerから派生する独立アプリとして構想中：
 ## 📦 開発環境
 
 ```bash
-git clone https://github.com/[your-username]/routine-tracker.git
+git clone https://github.com/LJDJGC/routine-tracker.git
 cd routine-tracker
 npm install
 npm run dev
@@ -115,6 +115,9 @@ npm run dev
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_STORAGE_BUCKET=
+NEXT_PUBLIC_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_APP_ID=
 ```
 
 ---
